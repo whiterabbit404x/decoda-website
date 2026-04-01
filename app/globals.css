@@ -450,3 +450,57 @@ textarea {
     max-width: none;
   }
 }
+
+.public-page-hero h1 {
+  max-width: 18ch;
+  font-size: clamp(2.2rem, 4vw, 3.8rem);
+}
+
+.legal-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.legal-section,
+.pricing-card {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.legal-section h2,
+.pricing-card h2 {
+  margin: 0 0 12px;
+  letter-spacing: -0.03em;
+}
+
+.legal-section p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.pricing-price {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px;
+}
+
+.pricing-price span {
+  font-size: 0.95rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.pricing-card p {
+  color: var(--muted);
+}
+
+.footer-links {
+  display: grid;
+  gap: 8px;
+}
