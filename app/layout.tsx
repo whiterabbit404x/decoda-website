@@ -12,6 +12,7 @@ const navigation = [
   { href: '/', label: 'Company' },
   { href: '/solutions/rwa-security', label: 'RWA Security' },
   { href: '/platform', label: 'Platform Vision' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/contact', label: 'Contact' },
 ];
 
@@ -50,8 +51,21 @@ export default function RootLayout({
               </p>
             </div>
             <div>
-              <p className="eyebrow">Current flagship</p>
-              <p>Product A: Real-world asset security operations and controls.</p>
+              <p className="eyebrow">Explore</p>
+              <div className="footer-links">
+                <Link href="/pricing" className="footer-link">
+                  Pricing
+                </Link>
+                <Link href="/terms" className="footer-link">
+                  Terms
+                </Link>
+                <Link href="/privacy" className="footer-link">
+                  Privacy
+                </Link>
+                <Link href="/refund-policy" className="footer-link">
+                  Refund Policy
+                </Link>
+              </div>
             </div>
             <div>
               <p className="eyebrow">Next step</p>
