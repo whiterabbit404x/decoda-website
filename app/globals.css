@@ -3,7 +3,7 @@
 
    Layout model:
      body (flex column) > SiteHeader (full-width) + main.site-main + SiteFooter
-     .site-main provides the centered 1240px content column for every page.
+     .site-main provides the centered content column (~1260px) for every page.
 
    The company homepage is built from scoped CSS Modules under
    components/company/. The classes below are the shared design tokens/primitives
@@ -41,16 +41,23 @@
      --container + --gutter define the ONE centered content grid shared by the
      header, every page body (.site-main), and the footer. Because the gutter is
      a single token, the responsive bump below moves all three in lockstep so the
-     navbar can never sit closer to the viewport edge than the body content. */
-  --container: 1240px;
-  --gutter: 32px;
+     navbar can never sit closer to the viewport edge than the body content.
+
+     The content column is (--container − 2×--gutter): the outer box is capped at
+     --container and centered, then --gutter is padded inside it. So the tokens are
+     sized as content + 2×gutter:
+       1340 / 40  → 1260px content column, ~53px viewport gutters at 1366px
+       1416 / 48  → 1320px content column, ~60px viewport gutters at 1440px */
+  --container: 1340px;
+  --gutter: 40px;
   --radius: 16px;
 }
 
-/* Wider comfort gutters on large desktops — applied via the shared token so the
-   header, body, and footer stay on the same grid (no per-component override). */
-@media (min-width: 1280px) {
+/* Wider comfort container on large desktops — applied via the shared tokens so
+   the header, body, and footer stay on the same grid (no per-component override). */
+@media (min-width: 1440px) {
   :root {
+    --container: 1416px;
     --gutter: 48px;
   }
 }
