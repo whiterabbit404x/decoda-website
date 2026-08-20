@@ -37,10 +37,22 @@
 
   --shadow: 0 24px 60px rgba(2, 8, 20, 0.5);
 
-  /* Layout rhythm */
+  /* Layout rhythm.
+     --container + --gutter define the ONE centered content grid shared by the
+     header, every page body (.site-main), and the footer. Because the gutter is
+     a single token, the responsive bump below moves all three in lockstep so the
+     navbar can never sit closer to the viewport edge than the body content. */
   --container: 1240px;
   --gutter: 32px;
   --radius: 16px;
+}
+
+/* Wider comfort gutters on large desktops — applied via the shared token so the
+   header, body, and footer stay on the same grid (no per-component override). */
+@media (min-width: 1280px) {
+  :root {
+    --gutter: 48px;
+  }
 }
 
 * {
@@ -83,19 +95,15 @@ h3 {
   text-wrap: balance;
 }
 
-/* Content column shared by every page. */
+/* Centered content column shared by every page — the same max-width + gutter
+   token the header and footer use, so all site chrome and page content align to
+   one grid. The wide-screen gutter comes from the --gutter token above. */
 .site-main {
   flex: 1 0 auto;
   width: 100%;
   max-width: var(--container);
   margin-inline: auto;
   padding-inline: var(--gutter);
-}
-
-@media (min-width: 1280px) {
-  .site-main {
-    padding-inline: 48px;
-  }
 }
 
 /* ------------------------- Shared primitives ---------------------------- */

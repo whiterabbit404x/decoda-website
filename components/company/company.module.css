@@ -66,9 +66,16 @@
 
 .heroInner {
   display: grid;
-  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
-  gap: 56px;
+  /* Left column takes the remaining space; the security panel gets a stable
+     420–520px band so the hero copy always has room and never gets squeezed. */
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 520px);
+  gap: 64px;
   align-items: center;
+}
+
+/* Let either column shrink inside the grid track instead of forcing overflow. */
+.heroInner > * {
+  min-width: 0;
 }
 
 .heroTitle {
