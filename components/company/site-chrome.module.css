@@ -1,0 +1,257 @@
+/* ==========================================================================
+   Site chrome (header + footer) — scoped to the public marketing site.
+   Uses the shared design tokens defined in app/globals.css.
+   ========================================================================== */
+
+/* ------------------------------- Header --------------------------------- */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  max-width: var(--container);
+  min-height: 64px;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+}
+
+/* Logo lockup (shield + wordmark) shared by header + footer. */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo [data-decoda-wordmark] {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.logo [data-decoda-wordmark] strong {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--text);
+}
+
+.logo [data-decoda-wordmark] > span {
+  margin-top: 3px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  color: var(--accent-2);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-inline: auto;
+}
+
+.navLink {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--muted-strong);
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.navLink:hover {
+  color: var(--text);
+  background: var(--panel-2);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Hamburger disclosure — only shown on small screens. No JS required. */
+.menu {
+  display: none;
+}
+
+.menuSummary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-2);
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.menuSummary::-webkit-details-marker {
+  display: none;
+}
+
+/* Anchored to the full-width header (its padding box), not the small hamburger,
+   so it spans the viewport minus the page gutters instead of clipping. */
+.menuPanel {
+  position: absolute;
+  top: 72px;
+  right: var(--gutter);
+  left: var(--gutter);
+  z-index: 60;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  background: var(--panel-solid);
+  box-shadow: var(--shadow);
+}
+
+.menuPanel .navLink {
+  padding: 12px 14px;
+  font-size: 1rem;
+}
+
+.menuPanel .menuCta {
+  margin-top: 6px;
+}
+
+/* ------------------------------- Footer --------------------------------- */
+
+.footer {
+  width: 100%;
+  margin-top: 96px;
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 60%, #030711);
+}
+
+.footerInner {
+  width: 100%;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 56px var(--gutter) 32px;
+}
+
+.footerTop {
+  display: grid;
+  grid-template-columns: 1.6fr repeat(3, 1fr) 1.5fr;
+  gap: 40px 32px;
+}
+
+.footerBrand {
+  max-width: 300px;
+}
+
+.footerBrand p {
+  margin: 16px 0 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.footerCol h3,
+.footerCta h3 {
+  margin: 0 0 16px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.footerCol ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.footerCol a {
+  font-size: 0.92rem;
+  color: var(--muted-strong);
+  transition: color 150ms ease;
+}
+
+.footerCol a:hover {
+  color: var(--accent-2);
+}
+
+.footerCta p {
+  margin: 0 0 16px;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.footerBottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.footerBottom p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+/* ------------------------------ Responsive ------------------------------ */
+
+@media (max-width: 980px) {
+  .footerTop {
+    grid-template-columns: 1fr 1fr;
+  }
+  .footerBrand,
+  .footerCta {
+    grid-column: 1 / -1;
+    max-width: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .nav {
+    display: none;
+  }
+  .menu {
+    display: block;
+  }
+  .demoButtonHeader {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .footerTop {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}

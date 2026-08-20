@@ -1,6 +1,6 @@
 # Decoda Website
 
-Public-facing Next.js marketing website for Decoda, positioning the company as the parent brand and Product A as the current flagship solution.
+Public-facing Next.js marketing website for Decoda, positioning the company as the parent brand and RWA Security as the current flagship solution.
 
 ## Routes
 
