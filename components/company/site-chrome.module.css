@@ -22,7 +22,7 @@
   gap: 24px;
   width: 100%;
   max-width: var(--container);
-  min-height: 64px;
+  min-height: 60px;
   margin: 0 auto;
   padding-inline: var(--gutter);
 }
@@ -117,7 +117,7 @@
    so it spans the viewport minus the page gutters instead of clipping. */
 .menuPanel {
   position: absolute;
-  top: 72px;
+  top: 68px;
   right: var(--gutter);
   left: var(--gutter);
   z-index: 60;
