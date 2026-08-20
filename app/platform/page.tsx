@@ -26,7 +26,7 @@ export default function PlatformPage() {
         actions={
           <>
             <Link href="/solutions/rwa-security" className="button-primary">
-              Start with Product A
+              Start with RWA Security
             </Link>
             <Link href="/contact" className="button-secondary">
               Discuss roadmap alignment
@@ -37,7 +37,7 @@ export default function PlatformPage() {
           <div className="hero-panel">
             <p className="eyebrow">Current state</p>
             <p>
-              Product A is the active flagship. Additional modules are intentionally presented
+              RWA Security is the active flagship. Additional modules are intentionally presented
               as directional roadmap areas rather than launched offerings.
             </p>
           </div>
@@ -67,7 +67,7 @@ export default function PlatformPage() {
           <div className="outcome-grid">
             <div>
               <strong>Focused now</strong>
-              <p>Product A solves a pressing RWA security operations problem today.</p>
+              <p>RWA Security solves a pressing security operations problem for real-world asset programs today.</p>
             </div>
             <div>
               <strong>Expandable later</strong>
@@ -83,7 +83,7 @@ export default function PlatformPage() {
 
       <CTA
         title="Use the platform page to communicate direction without overcommitting."
-        body="This route gives Decoda room to show strategic intent while keeping Product A as the concrete offer for current prospects."
+        body="This route gives Decoda room to show strategic intent while keeping RWA Security as the concrete offer for current prospects."
         primaryHref="/contact"
         primaryLabel="Book a roadmap conversation"
         secondaryHref="/solutions/rwa-security"

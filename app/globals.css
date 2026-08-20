@@ -1,15 +1,46 @@
+/* ==========================================================================
+   Decoda Security — public marketing site global styles.
+
+   Layout model:
+     body (flex column) > SiteHeader (full-width) + main.site-main + SiteFooter
+     .site-main provides the centered 1240px content column for every page.
+
+   The company homepage is built from scoped CSS Modules under
+   components/company/. The classes below are the shared design tokens/primitives
+   plus the component classes still used by the other marketing pages
+   (pricing, contact, platform, solution, and legal pages).
+   ========================================================================== */
+
 :root {
   color-scheme: dark;
-  --bg: #07111f;
-  --bg-soft: rgba(8, 19, 35, 0.78);
-  --panel: rgba(10, 24, 43, 0.88);
-  --panel-strong: #0d1f37;
-  --border: rgba(148, 163, 184, 0.18);
-  --text: #f8fafc;
-  --muted: #9fb0c9;
-  --accent: #67e8f9;
-  --accent-strong: #38bdf8;
-  --shadow: 0 24px 60px rgba(2, 8, 23, 0.45);
+
+  /* Surfaces */
+  --bg: #060b16;
+  --panel: rgba(16, 27, 47, 0.55);
+  --panel-2: rgba(31, 45, 74, 0.5);
+  --panel-solid: #0b1424;
+
+  /* Lines */
+  --border: rgba(130, 160, 200, 0.14);
+  --border-strong: rgba(130, 165, 210, 0.26);
+
+  /* Type */
+  --text: #f2f6fc;
+  --muted: #8fa1bd;
+  --muted-strong: #c3d0e4;
+
+  /* Accent (electric blue) */
+  --accent: #2563eb;
+  --accent-2: #60a5fa;
+  --accent-strong: #1d4ed8;
+  --cyan: #67e8f9;
+
+  --shadow: 0 24px 60px rgba(2, 8, 20, 0.5);
+
+  /* Layout rhythm */
+  --container: 1240px;
+  --gutter: 32px;
+  --radius: 16px;
 }
 
 * {
@@ -21,13 +52,17 @@ html {
 }
 
 body {
-  margin: 0;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  margin: 0;
   background:
-    radial-gradient(circle at top, rgba(56, 189, 248, 0.12), transparent 30%),
-    linear-gradient(180deg, #08101c 0%, #07111f 48%, #050b14 100%);
+    radial-gradient(1100px 560px at 72% -12%, rgba(37, 99, 235, 0.14), transparent 62%),
+    linear-gradient(180deg, #070d1a 0%, #060b16 58%, #04070f 100%);
+  background-attachment: fixed;
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -42,14 +77,85 @@ textarea {
   font: inherit;
 }
 
-.page-shell {
-  width: min(1180px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 24px 0 48px;
+h1,
+h2,
+h3 {
+  text-wrap: balance;
 }
 
-.site-header,
-.site-footer,
+/* Content column shared by every page. */
+.site-main {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@media (min-width: 1280px) {
+  .site-main {
+    padding-inline: 48px;
+  }
+}
+
+/* ------------------------- Shared primitives ---------------------------- */
+
+.eyebrow {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-2);
+}
+
+.button-primary,
+.button-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.button-primary {
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #04122b;
+  box-shadow: 0 10px 26px rgba(37, 99, 235, 0.32);
+}
+
+.button-secondary {
+  border-color: var(--border-strong);
+  background: rgba(15, 23, 42, 0.4);
+  color: var(--text);
+}
+
+.button-primary:hover,
+.button-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.button-secondary:hover {
+  border-color: var(--accent-2);
+}
+
+/* Visible keyboard focus everywhere. */
+:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* =====================================================================
+   Component classes for the OTHER marketing pages (not the homepage).
+   ===================================================================== */
+
 .hero,
 .info-card,
 .stat-card,
@@ -66,29 +172,6 @@ textarea {
   backdrop-filter: blur(16px);
 }
 
-.site-header,
-.site-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-radius: 24px;
-  padding: 18px 22px;
-}
-
-.site-header {
-  position: sticky;
-  top: 16px;
-  z-index: 20;
-  margin-bottom: 28px;
-}
-
-.site-footer {
-  margin-top: 36px;
-  align-items: start;
-}
-
-.site-header nav,
 .cta-actions,
 .hero-actions {
   display: flex;
@@ -96,13 +179,6 @@ textarea {
   gap: 12px;
 }
 
-.brand-mark {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-mark strong,
 .hero h1,
 .section-intro h2,
 .info-card h3,
@@ -112,7 +188,6 @@ textarea {
   letter-spacing: -0.03em;
 }
 
-.brand-mark span,
 .section-intro p,
 .info-card p,
 .hero-copy,
@@ -122,102 +197,42 @@ textarea {
 .cta-panel p,
 .contact-details p,
 .form-note,
-.site-footer p,
 .compact-list,
 .priority-list {
   color: var(--muted);
 }
 
-.brand-mark span {
-  display: block;
-  font-size: 0.9rem;
-}
-
-.brand-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
-  box-shadow: 0 0 24px rgba(103, 232, 249, 0.65);
-}
-
-.nav-link,
-.footer-link {
-  color: #d8e5f7;
-}
-
-.nav-link:hover,
-.footer-link:hover,
-.contact-details a:hover {
-  color: var(--accent);
-}
-
 .content-stack {
   display: grid;
   gap: 28px;
+  padding-block: 56px 0;
 }
 
 .hero {
-  border-radius: 32px;
-  padding: 34px;
+  border-radius: 28px;
+  padding: 40px;
 }
 
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
-  gap: 24px;
+  gap: 28px;
+  align-items: center;
 }
 
 .hero h1 {
-  font-size: clamp(2.8rem, 5vw, 5rem);
-  line-height: 0.95;
+  font-size: clamp(2.4rem, 4.4vw, 3.6rem);
+  line-height: 1.05;
   margin: 0 0 18px;
-  max-width: 11ch;
+  max-width: 15ch;
 }
 
 .hero-copy,
 .section-intro > p:last-child,
 .cta-panel > div > p:last-child {
   font-size: 1.05rem;
-  line-height: 1.7;
+  line-height: 1.65;
   max-width: 66ch;
-}
-
-.eyebrow {
-  margin: 0 0 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 0.78rem;
-  color: var(--accent);
-}
-
-.button-primary,
-.button-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 46px;
-  padding: 0 18px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
-}
-
-.button-primary {
-  background: linear-gradient(135deg, rgba(56, 189, 248, 0.9), rgba(103, 232, 249, 0.86));
-  color: #04111c;
-  font-weight: 700;
-}
-
-.button-secondary {
-  border-color: var(--border);
-  background: rgba(15, 23, 42, 0.45);
-  color: var(--text);
-}
-
-.button-primary:hover,
-.button-secondary:hover {
-  transform: translateY(-1px);
 }
 
 .hero-panel,
@@ -226,7 +241,7 @@ textarea {
 .cta-panel,
 .contact-form,
 .contact-details {
-  border-radius: 28px;
+  border-radius: 20px;
   padding: 24px;
 }
 
@@ -243,7 +258,7 @@ textarea {
 }
 
 .stat-card {
-  border-radius: 20px;
+  border-radius: 16px;
   padding: 18px;
 }
 
@@ -255,13 +270,13 @@ textarea {
 
 .section-grid {
   display: grid;
-  gap: 20px;
+  gap: 22px;
 }
 
 .section-intro h2,
 .cta-panel h2 {
   margin: 0 0 12px;
-  font-size: clamp(1.9rem, 3vw, 3.1rem);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
 }
 
 .three-up {
@@ -280,7 +295,7 @@ textarea {
 
 .info-card,
 .shot-card {
-  border-radius: 24px;
+  border-radius: var(--radius);
   padding: 24px;
 }
 
@@ -288,7 +303,7 @@ textarea {
 .shot-card h3,
 .feature-banner h3 {
   margin: 0 0 12px;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
 .priority-list,
@@ -301,7 +316,7 @@ textarea {
 
 .priority-list li::marker,
 .compact-list li::marker {
-  color: var(--accent);
+  color: var(--accent-2);
 }
 
 .feature-banner,
@@ -310,11 +325,13 @@ textarea {
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  border-radius: 22px;
+  padding: 32px;
 }
 
 .shot-frame {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(10, 18, 32, 0.95));
   padding: 14px;
   margin-bottom: 18px;
@@ -340,9 +357,9 @@ textarea {
 
 .shot-chart {
   height: 120px;
-  border-radius: 16px;
+  border-radius: 14px;
   background:
-    linear-gradient(180deg, rgba(103, 232, 249, 0.26), rgba(56, 189, 248, 0.02)),
+    linear-gradient(180deg, rgba(96, 165, 250, 0.24), rgba(37, 99, 235, 0.02)),
     linear-gradient(90deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.9));
 }
 
@@ -354,7 +371,7 @@ textarea {
 
 .shot-grid div {
   height: 44px;
-  border-radius: 12px;
+  border-radius: 10px;
   background: rgba(30, 41, 59, 0.88);
 }
 
@@ -365,12 +382,16 @@ textarea {
 .outcome-grid strong {
   display: block;
   margin-bottom: 10px;
-  color: var(--accent);
+  color: var(--accent-2);
 }
 
 .contact-details {
   display: grid;
   gap: 16px;
+}
+
+.contact-details a:hover {
+  color: var(--accent-2);
 }
 
 .contact-form {
@@ -388,8 +409,8 @@ textarea {
 .contact-form select,
 .contact-form textarea {
   width: 100%;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  border-radius: 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
   background: rgba(15, 23, 42, 0.78);
   color: var(--text);
   padding: 14px 16px;
@@ -400,60 +421,9 @@ textarea {
   font-size: 0.95rem;
 }
 
-@media (max-width: 980px) {
-  .hero-grid,
-  .three-up,
-  .four-up,
-  .two-up,
-  .contact-grid,
-  .two-column-layout,
-  .outcome-grid,
-  .stat-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .feature-banner,
-  .cta-panel,
-  .site-header,
-  .site-footer {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .site-header {
-    position: static;
-  }
-}
-
-@media (max-width: 720px) {
-  .page-shell {
-    width: min(100% - 20px, 1180px);
-    padding-top: 12px;
-  }
-
-  .hero,
-  .hero-panel,
-  .highlight-panel,
-  .feature-banner,
-  .cta-panel,
-  .contact-form,
-  .contact-details,
-  .info-card,
-  .shot-card,
-  .site-header,
-  .site-footer {
-    border-radius: 22px;
-    padding: 20px;
-  }
-
-  .hero h1 {
-    max-width: none;
-  }
-}
-
 .public-page-hero h1 {
-  max-width: 18ch;
-  font-size: clamp(2.2rem, 4vw, 3.8rem);
+  max-width: 20ch;
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
 }
 
 .legal-stack {
@@ -467,7 +437,7 @@ textarea {
   background: var(--panel);
   box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
-  border-radius: 24px;
+  border-radius: var(--radius);
   padding: 24px;
 }
 
@@ -500,7 +470,58 @@ textarea {
   color: var(--muted);
 }
 
-.footer-links {
-  display: grid;
-  gap: 8px;
+/* ------------------------------ Responsive ------------------------------ */
+
+@media (max-width: 980px) {
+  .hero-grid,
+  .three-up,
+  .four-up,
+  .two-up,
+  .contact-grid,
+  .two-column-layout,
+  .outcome-grid,
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-banner,
+  .cta-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: 720px) {
+  .hero,
+  .hero-panel,
+  .highlight-panel,
+  .feature-banner,
+  .cta-panel,
+  .contact-form,
+  .contact-details,
+  .info-card,
+  .shot-card {
+    border-radius: 18px;
+    padding: 22px;
+  }
+
+  .hero h1 {
+    max-width: none;
+  }
+}
+
+/* ---------------------------- Reduced motion ---------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

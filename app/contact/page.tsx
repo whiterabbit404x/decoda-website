@@ -7,7 +7,7 @@ export default function ContactPage() {
       <PageHero
         eyebrow="Contact Decoda"
         title="Request a demo, security briefing, or strategy conversation."
-        body="Use this public-facing contact route for prospective customers, partners, and stakeholders evaluating Decoda and Product A."
+        body="Use this public-facing contact route for prospective customers, partners, and stakeholders evaluating Decoda and RWA Security."
         actions={
           <a className="button-primary" href="mailto:hello@decoda.example?subject=Request%20for%20Decoda%20demo">
             Email Decoda
@@ -17,7 +17,7 @@ export default function ContactPage() {
           <div className="hero-panel">
             <p className="eyebrow">Suggested next steps</p>
             <ul className="compact-list">
-              <li>Request Product A walkthrough</li>
+              <li>Request RWA Security walkthrough</li>
               <li>Discuss deployment priorities</li>
               <li>Share partnership or press inquiries</li>
             </ul>
@@ -43,7 +43,7 @@ export default function ContactPage() {
             </div>
             <div>
               <p className="eyebrow">Flagship product</p>
-              <Link href="/solutions/rwa-security">Explore Product A: RWA Security</Link>
+              <Link href="/solutions/rwa-security">Explore RWA Security</Link>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function ContactPage() {
               <option value="" disabled>
                 Select one
               </option>
-              <option>Product A demo</option>
+              <option>RWA Security demo</option>
               <option>Platform roadmap discussion</option>
               <option>Partnership inquiry</option>
               <option>Media or investor request</option>
