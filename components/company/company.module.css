@@ -57,9 +57,11 @@
 .hero::before {
   content: '';
   position: absolute;
-  inset: -30% 30% auto -10%;
-  height: 520px;
-  background: radial-gradient(circle at 30% 30%, rgba(37, 99, 235, 0.22), transparent 60%);
+  inset: 0;
+  /* Very subtle accent behind the enterprise panel on the right. Kept low enough
+     that the hero's left and right read as the same --bg surface as the rest of
+     the page — not a lighter/bluer section. */
+  background: radial-gradient(circle at 74% 42%, rgba(37, 99, 235, 0.07), transparent 40%);
   pointer-events: none;
   z-index: -1;
 }
@@ -675,9 +677,12 @@
   padding: 44px;
   border: 1px solid var(--border-strong);
   border-radius: 24px;
+  /* Bordered CTA panel that reads as a card on the page surface — same card
+     tone as the enterprise/control panels plus a restrained accent, not a
+     full-width blue section band. */
   background:
-    radial-gradient(circle at 12% 50%, rgba(37, 99, 235, 0.28), transparent 45%),
-    linear-gradient(120deg, rgba(16, 32, 60, 0.72), rgba(9, 18, 35, 0.72));
+    radial-gradient(circle at 12% 50%, rgba(37, 99, 235, 0.1), transparent 55%),
+    linear-gradient(180deg, rgba(18, 34, 60, 0.5), rgba(9, 18, 35, 0.55));
   overflow: hidden;
 }
 
