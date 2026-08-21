@@ -3,3 +3,7 @@ node_modules
 npm-debug.log*
 .DS_Store
 *.tsbuildinfo
+
+# local env files (keep .env.example tracked)
+.env
+.env*.local

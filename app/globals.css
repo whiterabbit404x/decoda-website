@@ -440,6 +440,78 @@ h3 {
   font-size: 0.95rem;
 }
 
+/* Contact form: label text row inside each grid label. */
+.contact-form label > span {
+  font-weight: 500;
+}
+
+/* Disabled submit (while a request is in flight). */
+.button-primary:disabled,
+.button-primary[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-primary:disabled:hover,
+.button-primary[aria-disabled='true']:hover {
+  transform: none;
+}
+
+/* Per-field validation messages. */
+.field-error {
+  color: #fca5a5;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.contact-form input[aria-invalid='true'],
+.contact-form select[aria-invalid='true'],
+.contact-form textarea[aria-invalid='true'] {
+  border-color: #f87171;
+}
+
+/* Inline success / error status panels. */
+.form-status {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.form-status--success {
+  color: #bbf7d0;
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(22, 101, 52, 0.25);
+}
+
+.form-status--error {
+  color: #fecaca;
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(127, 29, 29, 0.25);
+}
+
+.form-status--error a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Honeypot field: present in the DOM, hidden from people and assistive tech. */
+.contact-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  border: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .public-page-hero h1 {
   max-width: 20ch;
   font-size: clamp(2.2rem, 4vw, 3.4rem);

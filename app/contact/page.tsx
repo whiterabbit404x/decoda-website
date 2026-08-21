@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { PageHero, SectionIntro } from '@/components/sections';
+import { ContactForm } from '@/components/company/contact-form';
 
 export default function ContactPage() {
   return (
@@ -7,9 +8,12 @@ export default function ContactPage() {
       <PageHero
         eyebrow="Contact Decoda"
         title="Request a demo, security briefing, or strategy conversation."
-        body="Use this public-facing contact route for prospective customers, partners, and stakeholders evaluating Decoda and RWA Security."
+        body="This is the direct line for prospective customers, partners, and stakeholders evaluating Decoda and RWA Security."
         actions={
-          <a className="button-primary" href="mailto:hello@decoda.example?subject=Request%20for%20Decoda%20demo">
+          <a
+            className="button-primary"
+            href="mailto:hello@decodasecurity.com?subject=Decoda%20Security%20Inquiry"
+          >
             Email Decoda
           </a>
         }
@@ -29,16 +33,16 @@ export default function ContactPage() {
         <div>
           <SectionIntro
             eyebrow="Get in touch"
-            title="A clean public contact experience for an institutional audience."
-            description="This form is intentionally simple and positioned for demo requests. Wire it to your CRM, scheduling tool, or secure intake workflow when ready."
+            title="Tell us what you're evaluating and we'll route it to the right team."
+            description="Share a few details about your program and the Decoda team will follow up using the work email you provide."
           />
           <div className="contact-details">
             <div>
               <p className="eyebrow">Primary inbox</p>
-              <a href="mailto:hello@decoda.example">hello@decoda.example</a>
+              <a href="mailto:hello@decodasecurity.com">hello@decodasecurity.com</a>
             </div>
             <div>
-              <p className="eyebrow">Suggested routing</p>
+              <p className="eyebrow">What this inbox handles</p>
               <p>Sales demos, strategic partnerships, media requests, and investor conversations.</p>
             </div>
             <div>
@@ -48,46 +52,7 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <form className="contact-form">
-          <label>
-            Name
-            <input type="text" placeholder="Jane Smith" />
-          </label>
-          <label>
-            Work email
-            <input type="email" placeholder="jane@institution.com" />
-          </label>
-          <label>
-            Company
-            <input type="text" placeholder="Institution name" />
-          </label>
-          <label>
-            Interest area
-            <select defaultValue="">
-              <option value="" disabled>
-                Select one
-              </option>
-              <option>RWA Security demo</option>
-              <option>Platform roadmap discussion</option>
-              <option>Partnership inquiry</option>
-              <option>Media or investor request</option>
-            </select>
-          </label>
-          <label>
-            What are you evaluating?
-            <textarea
-              rows={6}
-              placeholder="Share the use case, timelines, or security questions Decoda should prepare for."
-            />
-          </label>
-          <button type="submit" className="button-primary">
-            Request follow-up
-          </button>
-          <p className="form-note">
-            Placeholder form only. Connect submission handling to your preferred CRM or secure
-            intake workflow.
-          </p>
-        </form>
+        <ContactForm />
       </section>
     </div>
   );
