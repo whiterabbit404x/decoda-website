@@ -5,18 +5,18 @@ import styles from './company.module.css';
 
 export function CompanyCta() {
   return (
-    <section className={styles.cta} aria-labelledby="company-cta">
-      <div className={styles.ctaInner}>
+    <section className={`surface-dark ${styles.cta}`} aria-labelledby="company-cta">
+      <div className={`container ${styles.ctaInner}`}>
         <span className={styles.ctaShield} aria-hidden="true">
-          <DecodaShield size={92} strong />
+          <DecodaShield size={64} strong />
         </span>
         <div className={styles.ctaText}>
           <h2 id="company-cta" className={styles.ctaTitle}>
-            Position Decoda as the trusted security partner behind digital finance growth.
+            Build digital-finance infrastructure with security controls designed in from the start.
           </h2>
           <p className={styles.ctaBody}>
-            From day one, we build security into blockchain financial systems so institutions can
-            innovate with confidence and scale with trust.
+            Talk to the Decoda team about the controls, visibility, and evidence your digital asset
+            program needs.
           </p>
         </div>
         <div className={styles.ctaActions}>
@@ -24,8 +24,8 @@ export function CompanyCta() {
             Request a demo
             <IconArrowRight size={17} />
           </Link>
-          <Link href="/platform" className="button-secondary">
-            See platform vision
+          <Link href="/solutions/rwa-security" className="button-secondary">
+            Explore RWA Security
           </Link>
         </div>
       </div>

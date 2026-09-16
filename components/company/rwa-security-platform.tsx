@@ -1,21 +1,17 @@
+import Link from 'next/link';
 import { DecodaShield } from './logo';
-import { IconCheck } from './icons';
+import { IconCheck, IconExternal } from './icons';
+import { RevealGroup, SectionReveal } from './section-reveal';
 import styles from './company.module.css';
 
-/* --------------------------------------------------------------------------
-   Representative product-UI mocks. These are illustrative interface chrome for
-   the RWA Security Platform — not live data and not real customer records.
-   -------------------------------------------------------------------------- */
+const RWA_APP_URL = 'https://rwa.decodasecurity.com/';
 
-function WindowDots() {
-  return (
-    <span className={styles.uiDots} aria-hidden="true">
-      <span />
-      <span />
-      <span />
-    </span>
-  );
-}
+/* --------------------------------------------------------------------------
+   Representative product-UI views for Decoda RWA Guard. These are illustrative
+   interface chrome — not live data, not customer records, and not a claim
+   about any specific figure shown. The "Representative interface" note under
+   each frame says so on the page itself.
+   -------------------------------------------------------------------------- */
 
 function RiskDonut() {
   const r = 8.5;
@@ -45,10 +41,9 @@ function DashboardMock() {
     <div className={styles.ui}>
       <div className={styles.uiBar}>
         <DecodaShield size={14} />
-        <strong>RWA Security</strong>
-        <WindowDots />
+        <strong>RWA Guard</strong>
+        <span className={styles.uiTag}>Overview</span>
       </div>
-      <span className={styles.uiLabel}>Overview</span>
       <div className={styles.uiMetrics}>
         <div className={styles.uiMetric}>
           <span className={styles.uiGauge}>
@@ -67,13 +62,13 @@ function DashboardMock() {
         </div>
         <div className={styles.uiMetric}>
           <span className={styles.uiMetricValue}>96%</span>
-          <span className={styles.uiMetricLabel}>Healthy</span>
+          <span className={styles.uiMetricLabel}>Controls healthy</span>
         </div>
       </div>
       <svg className={styles.uiChart} viewBox="0 0 200 54" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient id="rwa-chart-grad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="rgba(59,130,246,0.4)" />
+            <stop offset="0" stopColor="rgba(59,130,246,0.35)" />
             <stop offset="1" stopColor="rgba(59,130,246,0)" />
           </linearGradient>
         </defs>
@@ -82,12 +77,16 @@ function DashboardMock() {
       </svg>
       <div className={styles.uiRows}>
         <div className={styles.uiRow}>
-          <span>Privileged access</span>
+          <span>Privileged access change</span>
           <span className={`${styles.chip} ${styles.chipHigh}`}>High</span>
         </div>
         <div className={styles.uiRow}>
           <span>Counterparty concentration</span>
           <span className={`${styles.chip} ${styles.chipMed}`}>Medium</span>
+        </div>
+        <div className={styles.uiRow}>
+          <span>Policy attestation due</span>
+          <span className={`${styles.chip} ${styles.chipLow}`}>Low</span>
         </div>
       </div>
     </div>
@@ -108,7 +107,7 @@ function InvestigationMock() {
     <div className={styles.ui}>
       <div className={styles.uiBar}>
         <strong>Investigations</strong>
-        <WindowDots />
+        <span className={styles.uiTag}>Case</span>
       </div>
       <div className={styles.uiAlert}>
         <AlertGlyph />
@@ -154,11 +153,11 @@ function EvidenceMock() {
   return (
     <div className={styles.ui}>
       <div className={styles.uiBar}>
-        <strong>Reports</strong>
-        <WindowDots />
+        <strong>Evidence</strong>
+        <span className={styles.uiTag}>Report</span>
       </div>
       <div className={styles.uiRow}>
-        <strong style={{ color: 'var(--text)' }}>Audit trail report</strong>
+        <strong className={styles.uiRowTitle}>Audit trail report</strong>
         <span className={styles.badgeDone}>Complete</span>
       </div>
       <div className={styles.uiRows}>
@@ -179,53 +178,119 @@ function EvidenceMock() {
           </div>
         ))}
       </div>
-      <span className={styles.uiButton}>Download report</span>
+      <span className={styles.uiButton}>Export report</span>
     </div>
   );
 }
 
-const previews = [
-  {
-    render: <DashboardMock />,
-    title: 'Dashboard overview',
-    caption: 'Real-time visibility into risk, posture, incidents, alerts, and system health.',
-  },
+/**
+ * Enterprise application frame: light browser chrome with the product's own
+ * dark interface inside. The viewport carries `surface-dark` so the mock's
+ * tokens resolve to their navy values while the surrounding card stays light.
+ * `aspect-ratio` on the viewport reserves the height before paint, so the
+ * preview cannot shift layout as the section loads.
+ */
+function AppFrame({
+  children,
+  label,
+  wide = false,
+}: {
+  children: React.ReactNode;
+  label: string;
+  wide?: boolean;
+}) {
+  return (
+    <div className={`${styles.appFrame} ${wide ? styles.appFrameWide : ''}`}>
+      <div className={styles.appChrome}>
+        <span className={styles.appDots} aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
+        <span className={styles.appUrl}>rwa.decodasecurity.com</span>
+      </div>
+      <div className={`surface-dark ${styles.appViewport}`} role="img" aria-label={label}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+const outcomes = [
+  'Monitor risk across the program continuously, not at review time.',
+  'Investigate activity with the surrounding context already assembled.',
+  'Respond through policy-controlled actions with defined authority.',
+  'Preserve verifiable evidence of what happened and what was decided.',
+];
+
+const supportingViews = [
   {
     render: <InvestigationMock />,
-    title: 'Investigation / incident workflow',
-    caption: 'Triage, investigate, correlate evidence, and understand impact with full context.',
+    title: 'Investigation workflow',
+    caption: 'Triage an alert, correlate related activity, and record the decision trail.',
+    label: 'Decoda RWA Guard investigation workflow',
   },
   {
     render: <EvidenceMock />,
-    title: 'Evidence / audit trail',
-    caption: 'Generate tamper-evident evidence and audit-ready reporting with confidence.',
+    title: 'Evidence and audit trail',
+    caption: 'Assemble control evidence and audit-ready reporting for oversight functions.',
+    label: 'Decoda RWA Guard evidence and audit trail report',
   },
 ];
 
 export function RwaSecurityPlatform() {
   return (
-    <section className={styles.section} aria-labelledby="flagship-solution">
-      <div className={`${styles.sectionHead} ${styles.center}`}>
-        <p className={styles.eyebrow}>Flagship solution</p>
-        <h2 id="flagship-solution" className={styles.sectionTitle}>
-          RWA Security Platform
-        </h2>
-        <p className={styles.sectionLead}>
-          Decoda RWA Security is a real-time RWA security and incident-response platform with
-          evidence-grounded AI investigation and policy-controlled automation — a purpose-built
-          operating layer designed to reduce risk, strengthen controls, and provide defensible
-          operational evidence.
-        </p>
-      </div>
+    <section className={`${styles.section} ${styles.sectionAlt}`} aria-labelledby="flagship-solution">
+      <div className="container">
+        <div className={styles.flagshipGrid}>
+          <SectionReveal>
+            <p className={styles.eyebrow}>Flagship solution</p>
+            <h2 id="flagship-solution" className={styles.sectionTitle}>
+              Security operations for tokenized financial infrastructure.
+            </h2>
+            <p className={styles.sectionLead}>
+              Decoda RWA Guard is the platform available today. It monitors risk across a
+              real-world asset program, supports investigation of activity in context, carries out
+              response under policy control, and preserves verifiable evidence of what was done.
+            </p>
+            <ul className={styles.outcomeList}>
+              {outcomes.map((outcome) => (
+                <li key={outcome}>
+                  <IconCheck className={styles.outcomeIcon} size={16} />
+                  <span>{outcome}</span>
+                </li>
+              ))}
+            </ul>
+            <div className={styles.flagshipActions}>
+              <a href={RWA_APP_URL} className="button-primary">
+                Explore RWA Security
+                <IconExternal size={16} />
+              </a>
+              <Link href="/solutions/rwa-security" className="button-secondary">
+                Solution overview
+              </Link>
+            </div>
+          </SectionReveal>
 
-      <div className={styles.previewGrid}>
-        {previews.map((preview) => (
-          <article key={preview.title} className={styles.previewCard}>
-            <div className={styles.previewFrame}>{preview.render}</div>
-            <h3 className={styles.previewCaptionTitle}>{preview.title}</h3>
-            <p className={styles.previewCaptionBody}>{preview.caption}</p>
-          </article>
-        ))}
+          <SectionReveal className="reveal-rise">
+            <AppFrame wide label="Decoda RWA Guard dashboard overview">
+              <DashboardMock />
+            </AppFrame>
+            <p className={styles.previewNote}>
+              Representative interface. Values shown are illustrative.
+            </p>
+          </SectionReveal>
+        </div>
+
+        <RevealGroup className={styles.supportingGrid}>
+          {supportingViews.map((view) => (
+            <article key={view.title} className={styles.supportingCard}>
+              <AppFrame label={view.label}>{view.render}</AppFrame>
+              <h3 className={styles.supportingTitle}>{view.title}</h3>
+              <p className={styles.supportingBody}>{view.caption}</p>
+            </article>
+          ))}
+        </RevealGroup>
       </div>
     </section>
   );

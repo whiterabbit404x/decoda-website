@@ -1,171 +1,338 @@
 /* ==========================================================================
-   Company homepage sections — scoped via CSS Modules so nothing here can leak
+   Company homepage sections — scoped via CSS Modules so nothing here leaks
    into the other marketing pages. Design tokens come from app/globals.css.
+
+   Surface rhythm: dark navy hero → light body (workspace / white, alternating
+   only in tone) → dark navy final CTA. Sections that must be navy carry the
+   global `.surface-dark` class in their markup, which re-points the shared
+   tokens; nothing below hardcodes a navy value for content.
    ========================================================================== */
 
+/* ---------------------------- Section shells ----------------------------- */
+
 .section {
-  padding-block: 84px;
-  border-top: 1px solid var(--border);
+  padding-block: 88px;
+  background: var(--bg);
+}
+
+/* White band. Used to separate the flagship and platform-vision sections from
+   the workspace grey without introducing another dark band. */
+.sectionAlt {
+  background: #ffffff;
+  border-block: 1px solid var(--border);
 }
 
 .sectionHead {
-  max-width: 760px;
+  max-width: 720px;
 }
 
 .eyebrow {
   margin: 0 0 14px;
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent-2);
 }
 
 .sectionTitle {
   margin: 0;
-  font-size: clamp(1.9rem, 3vw, 2.6rem);
-  line-height: 1.1;
+  font-size: clamp(1.75rem, 2.8vw, 2.4rem);
+  line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--text);
 }
 
 .sectionLead {
   margin: 18px 0 0;
-  max-width: 68ch;
+  max-width: 62ch;
   font-size: 1.02rem;
-  line-height: 1.6;
+  line-height: 1.65;
   color: var(--muted);
 }
 
-.center {
-  margin-inline: auto;
-  text-align: center;
-}
-
-.center .sectionLead {
-  margin-inline: auto;
-}
-
-/* ------------------------------- Hero ----------------------------------- */
+/* ------------------------------- Hero ------------------------------------
+   Full-bleed navy band; the content column comes from the inner .container. */
 
 .hero {
   position: relative;
-  padding-block: 64px 52px;
+  padding-block: 68px 76px;
+  background:
+    radial-gradient(1100px 520px at 78% 34%, rgba(37, 99, 235, 0.14), transparent 62%),
+    linear-gradient(180deg, #07111f 0%, #0b1220 100%);
+  border-bottom: 1px solid rgba(148, 178, 216, 0.14);
   overflow: hidden;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  /* Very subtle accent behind the enterprise panel on the right. Kept low enough
-     that the hero's left and right read as the same --bg surface as the rest of
-     the page — not a lighter/bluer section. */
-  background: radial-gradient(circle at 74% 42%, rgba(37, 99, 235, 0.07), transparent 40%);
-  pointer-events: none;
-  z-index: -1;
 }
 
 .heroInner {
   display: grid;
-  /* Left copy ~55%, security panel ~45%. Both tracks are fractional so the hero
-     spans the full content column; the panel keeps a 430px floor so it never
-     gets squeezed, and min-width:0 (below) lets either track shrink. */
-  grid-template-columns: minmax(0, 1.08fr) minmax(430px, 0.92fr);
+  grid-template-columns: minmax(0, 1.02fr) minmax(420px, 0.98fr);
   gap: 56px;
   align-items: center;
 }
 
-/* Let either column shrink inside the grid track instead of forcing overflow. */
 .heroInner > * {
   min-width: 0;
 }
 
+.heroCopy {
+  max-width: 620px;
+}
+
 .heroTitle {
-  margin: 20px 0 0;
-  font-size: clamp(48px, 4vw, 58px);
-  line-height: 1.03;
+  margin: 18px 0 0;
+  font-size: clamp(2.05rem, 3.7vw, 3.35rem);
+  line-height: 1.06;
   letter-spacing: -0.03em;
   color: var(--text);
 }
 
 .heroBody {
   margin: 22px 0 0;
-  max-width: 560px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--muted);
+  max-width: 56ch;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--muted-strong);
 }
 
 .heroActions {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-top: 28px;
+  margin-top: 30px;
 }
 
 /* Enterprise security panel (hero right) */
-.panel {
-  position: relative;
-  padding: 24px;
+.heroPanel {
+  padding: 22px 22px 18px;
   border: 1px solid var(--border-strong);
-  border-radius: 20px;
-  background:
-    linear-gradient(180deg, rgba(20, 38, 68, 0.55), rgba(9, 18, 35, 0.65));
-  box-shadow: var(--shadow);
-  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: var(--shadow-lg);
 }
 
-.panelHead {
-  margin: 0 0 18px;
+.heroPanelHead {
+  margin: 0 0 6px;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
-  color: var(--muted-strong);
-}
-
-.panelStats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.panelStat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 18px 10px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: rgba(8, 17, 33, 0.5);
-  text-align: center;
-}
-
-.panelStatIcon {
-  color: var(--accent-2);
-}
-
-.panelStatValue {
-  font-size: 1.7rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--text);
-}
-
-.panelStatLabel {
-  font-size: 0.72rem;
-  line-height: 1.35;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
-.panelVisual {
+.heroDisciplines {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 14px 0 0;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--border);
+  list-style: none;
+}
+
+.heroDisciplines li {
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-strong);
+}
+
+.heroDisciplines li + li {
+  border-left: 1px solid var(--border);
+}
+
+/* ------------------------- Hero security graphic -------------------------
+   The site's only looping animation. See hero-security-graphic.tsx for the
+   diagram's structure; the timeline below is one shared 10s cycle in which
+   each stage has its own keyframes, so stages activate in order and wind down
+   together instead of drifting out of phase.
+
+   Every overlay's BASE (unanimated) state is the finished, verified state,
+   which is what prefers-reduced-motion falls back to once globals.css strips
+   the animation.
+   ------------------------------------------------------------------------ */
+
+.graphic {
   display: block;
   width: 100%;
-  height: 78px;
-  margin-top: 16px;
-  color: var(--accent);
+  max-width: 440px;
+  height: auto;
+  margin-inline: auto;
+}
+
+.gPerimeter {
+  fill: none;
+  stroke: rgba(148, 178, 216, 0.22);
+  stroke-width: 1;
+  stroke-dasharray: 5 6;
+}
+
+.gPerimeterLabel {
+  fill: #7f93ae;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+}
+
+.gLinkBase {
+  fill: none;
+  stroke: rgba(148, 178, 216, 0.22);
+  stroke-width: 1.4;
+}
+
+.gLinkOn {
+  fill: none;
+  stroke: #60a5fa;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.gNodeBase {
+  fill: rgba(255, 255, 255, 0.03);
+  stroke: rgba(148, 178, 216, 0.28);
+  stroke-width: 1;
+}
+
+.gNodeOn {
+  fill: rgba(37, 99, 235, 0.18);
+  stroke: #60a5fa;
+  stroke-width: 1.2;
+}
+
+.gLabel {
+  fill: #cbd5e1;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.gHubBase {
+  fill: rgba(9, 18, 33, 0.85);
+  stroke: rgba(148, 178, 216, 0.34);
+  stroke-width: 1.2;
+}
+
+.gHubOn {
+  fill: rgba(37, 99, 235, 0.16);
+  stroke: #60a5fa;
+  stroke-width: 1.4;
+}
+
+.gRingBase {
+  fill: none;
+  stroke: rgba(148, 178, 216, 0.22);
+  stroke-width: 1;
+}
+
+.gRingOn {
+  fill: none;
+  stroke: rgba(96, 165, 250, 0.55);
+  stroke-width: 1.4;
+}
+
+.gCheck {
+  fill: none;
+  stroke: #93c5fd;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.gCaption {
+  fill: #8ea3bd;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+}
+
+.stage1,
+.stage2,
+.stage3,
+.stage4,
+.stage5,
+.stage6 {
+  animation-duration: 10s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: both;
+}
+
+.stage1 {
+  animation-name: heroStage1;
+}
+
+.stage2 {
+  animation-name: heroStage2;
+}
+
+.stage3 {
+  animation-name: heroStage3;
+}
+
+.stage4 {
+  animation-name: heroStage4;
+}
+
+.stage5 {
+  animation-name: heroStage5;
+}
+
+.stage6 {
+  animation-name: heroStage6;
+}
+
+@keyframes heroStage1 {
+  0%, 2% { opacity: 0; stroke-dashoffset: 1; }
+  5% { opacity: 1; }
+  12%, 80% { opacity: 1; stroke-dashoffset: 0; }
+  92% { opacity: 0; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes heroStage2 {
+  0%, 14% { opacity: 0; stroke-dashoffset: 1; }
+  17% { opacity: 1; }
+  24%, 82% { opacity: 1; stroke-dashoffset: 0; }
+  94% { opacity: 0; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes heroStage3 {
+  0%, 26% { opacity: 0; stroke-dashoffset: 1; }
+  29% { opacity: 1; }
+  36%, 84% { opacity: 1; stroke-dashoffset: 0; }
+  96% { opacity: 0; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+/* Verified control state */
+@keyframes heroStage4 {
+  0%, 39% { opacity: 0; stroke-dashoffset: 1; }
+  42% { opacity: 1; }
+  50%, 86% { opacity: 1; stroke-dashoffset: 0; }
+  97% { opacity: 0; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes heroStage5 {
+  0%, 50% { opacity: 0; stroke-dashoffset: 1; }
+  53% { opacity: 1; }
+  60%, 86% { opacity: 1; stroke-dashoffset: 0; }
+  97% { opacity: 0; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
+}
+
+@keyframes heroStage6 {
+  0%, 60% { opacity: 0; stroke-dashoffset: 1; }
+  63% { opacity: 1; }
+  70%, 88% { opacity: 1; stroke-dashoffset: 0; }
+  98% { opacity: 0; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 1; }
 }
 
 /* ------------------------- Capability cards ----------------------------- */
@@ -174,48 +341,43 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px;
-  margin-top: 40px;
+  margin-top: 44px;
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 26px;
+  gap: 14px;
+  padding: 28px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: var(--panel);
-  transition: border-color 160ms ease, transform 160ms ease;
-}
-
-.card:hover {
-  border-color: var(--border-strong);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
 }
 
 .cardIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 12px;
-  border: 1px solid var(--border-strong);
-  background: rgba(37, 99, 235, 0.14);
-  color: var(--accent-2);
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--accent-soft);
+  color: var(--accent);
 }
 
 .cardTitle {
   margin: 0;
-  font-size: 1.12rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 
 .cardBody {
   margin: 0;
   font-size: 0.95rem;
-  line-height: 1.62;
+  line-height: 1.65;
   color: var(--muted);
 }
 
@@ -223,29 +385,25 @@
 
 .whyGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 48px;
-  align-items: center;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 56px;
+  align-items: start;
 }
 
 .controlPanel {
   display: grid;
-  padding: 8px 24px;
-  border: 1px solid var(--border-strong);
-  border-radius: 18px;
-  background: linear-gradient(180deg, rgba(18, 34, 60, 0.5), rgba(9, 18, 35, 0.55));
-  box-shadow: var(--shadow);
+  gap: 12px;
 }
 
 .controlItem {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
-  padding: 22px 0;
-}
-
-.controlItem + .controlItem {
-  border-top: 1px solid var(--border);
+  gap: 14px;
+  padding: 20px 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: var(--shadow-sm);
 }
 
 .controlCheck {
@@ -256,105 +414,220 @@
   width: 30px;
   height: 30px;
   border-radius: 999px;
-  background: rgba(37, 99, 235, 0.16);
-  color: var(--accent-2);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.controlTitle {
+  margin: 3px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text);
 }
 
 .controlText {
-  margin: 0;
-  font-size: 1rem;
+  margin: 7px 0 0;
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* -------------------------- Flagship: RWA Guard ------------------------- */
+
+.flagshipGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  gap: 56px;
+  align-items: center;
+}
+
+.outcomeList {
+  display: grid;
+  gap: 12px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.outcomeList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  font-size: 0.95rem;
   line-height: 1.55;
   color: var(--muted-strong);
 }
 
-.controlText b {
-  color: var(--text);
-  font-weight: 600;
+.outcomeIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent);
 }
 
-/* ----------------------- RWA Security Platform -------------------------- */
-
-.previewGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  margin-top: 44px;
-}
-
-.previewCard {
+.flagshipActions {
   display: flex;
-  flex-direction: column;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--panel);
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
 }
 
-.previewFrame {
-  height: 244px;
-  padding: 12px;
+.previewNote {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+/* Enterprise application frame: light browser chrome, product UI inside. */
+.appFrame {
   border: 1px solid var(--border);
-  border-radius: 12px;
-  background: linear-gradient(180deg, #0a1526, #060d1a);
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
 
-.previewCaptionTitle {
-  margin: 16px 0 6px;
+.appChrome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.appDots {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.appDots span {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.appUrl {
+  flex: 1;
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* container-type lets the mock's type scale with the frame (see .ui). */
+.appViewport {
+  container-type: inline-size;
+  padding: 14px;
+  background: linear-gradient(180deg, #0d1729 0%, #08111f 100%);
+  overflow: hidden;
+}
+
+.appFrameWide .appViewport {
+  padding: 18px;
+}
+
+/* Fixed product-frame proportions once there is room for them, so a row of
+   frames lines up. Below this the viewport sizes to its own content instead,
+   which is what keeps the interface from being clipped on narrow screens.
+   Either way the height is resolved from CSS before paint — the mock is inline
+   DOM with no images to load, so there is nothing left to shift. */
+@media (min-width: 981px) {
+  .appViewport {
+    aspect-ratio: 16 / 8.6;
+  }
+  .appFrameWide .appViewport {
+    aspect-ratio: 16 / 9.4;
+  }
+  .ui {
+    height: 100%;
+  }
+  .uiChart {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
+.supportingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-top: 56px;
+}
+
+.supportingCard {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg);
+}
+
+.supportingTitle {
+  margin: 18px 0 6px;
   font-size: 1rem;
   font-weight: 600;
   color: var(--text);
 }
 
-.previewCaptionBody {
+.supportingBody {
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
+  font-size: 0.9rem;
+  line-height: 1.6;
   color: var(--muted);
 }
 
-/* Mock product UI (representative, no real customer data) */
+/* ------------------- Product UI mock (inside .appViewport) ---------------
+   Sits inside a `.surface-dark` scope, so every token below resolves to its
+   navy value while the surrounding card stays light.
+   ------------------------------------------------------------------------ */
+
 .ui {
   display: flex;
   flex-direction: column;
   gap: 9px;
-  height: 100%;
-  font-size: 0.62rem;
+  font-size: clamp(9px, 2.05cqw, 13px);
+  line-height: 1.35;
 }
 
 .uiBar {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   padding-bottom: 9px;
   border-bottom: 1px solid var(--border);
   color: var(--muted-strong);
 }
 
 .uiBar strong {
-  font-size: 0.68rem;
+  font-size: 1.13em;
   font-weight: 600;
   color: var(--text);
 }
 
-.uiBar .uiDots {
+.uiTag {
   margin-left: auto;
-  display: flex;
-  gap: 4px;
-}
-
-.uiDots span {
-  width: 6px;
-  height: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--border-strong);
+  font-size: 0.87em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .uiLabel {
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  font-size: 0.56rem;
+  font-size: 0.9em;
 }
 
 .uiMetrics {
@@ -374,14 +647,14 @@
 }
 
 .uiMetricValue {
-  font-size: 0.92rem;
+  font-size: 1.48em;
   font-weight: 700;
   color: var(--text);
 }
 
 .uiMetricLabel {
   color: var(--muted);
-  font-size: 0.54rem;
+  font-size: 0.87em;
 }
 
 .uiGauge {
@@ -391,8 +664,8 @@
 }
 
 .uiChart {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 auto;
+  min-height: 40px;
   width: 100%;
 }
 
@@ -413,6 +686,11 @@
   color: var(--muted);
 }
 
+.uiRowTitle {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .uiAlert {
   display: flex;
   align-items: center;
@@ -425,7 +703,7 @@
 }
 
 .uiAlert strong {
-  color: #fff;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -434,8 +712,8 @@
   padding: 2px 7px;
   border-radius: 999px;
   background: rgba(239, 68, 68, 0.9);
-  color: #fff;
-  font-size: 0.52rem;
+  color: #ffffff;
+  font-size: 0.84em;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -447,7 +725,7 @@
   background: rgba(34, 197, 94, 0.16);
   border: 1px solid rgba(34, 197, 94, 0.4);
   color: #86efac;
-  font-size: 0.52rem;
+  font-size: 0.84em;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
@@ -493,16 +771,16 @@
   padding: 6px 10px;
   border: 1px solid var(--border-strong);
   border-radius: 7px;
-  background: rgba(37, 99, 235, 0.16);
+  background: rgba(37, 99, 235, 0.2);
   color: #dbeafe;
-  font-size: 0.6rem;
+  font-size: 0.97em;
   font-weight: 600;
 }
 
 .chip {
   padding: 1px 6px;
   border-radius: 999px;
-  font-size: 0.5rem;
+  font-size: 0.81em;
   font-weight: 600;
 }
 
@@ -517,17 +795,28 @@
 }
 
 .chipLow {
-  background: rgba(37, 99, 235, 0.2);
+  background: rgba(37, 99, 235, 0.22);
   color: #93c5fd;
 }
 
-/* --------------------------- Security lifecycle ------------------------- */
+/* --------------------------- Security lifecycle -------------------------
+   The body's one explanatory sequence: Observe → Detect → Investigate →
+   Respond → Prove, played ONCE when the section scrolls into view (~2.5s
+   end to end) and never replayed.
+
+   Base styles are the FINISHED state. The pre-sequence ("armed") state is
+   applied only when JS is available AND the section has not yet played, so
+   the completed diagram is what renders without JS and under reduced motion.
+   Only opacity and transform animate — no layout properties.
+   ------------------------------------------------------------------------ */
 
 .lifecycle {
   display: flex;
   align-items: stretch;
-  gap: 8px;
-  margin-top: 44px;
+  gap: 0;
+  margin: 48px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .step {
@@ -535,155 +824,246 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 22px 18px;
+  padding: 24px 20px;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--panel);
+  box-shadow: var(--shadow-sm);
 }
 
 .stepTop {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
 }
 
 .stepIcon {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  border: 1px solid var(--border-strong);
-  background: rgba(37, 99, 235, 0.14);
-  color: var(--accent-2);
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Verified tick on the final stage. */
+.stepVerified {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  border: 2px solid var(--panel);
+  background: #16a34a;
+}
+
+.stepVerified::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 5px;
+  height: 2.5px;
+  border-left: 1.6px solid #ffffff;
+  border-bottom: 1.6px solid #ffffff;
+  transform: rotate(-45deg) translate(0.5px, -0.5px);
 }
 
 .stepName {
   margin: 0;
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 
 .stepBody {
   margin: 0;
   font-size: 0.85rem;
-  line-height: 1.55;
-  color: var(--muted);
-}
-
-.stepArrow {
-  display: flex;
-  align-items: center;
-  color: var(--accent-2);
-  opacity: 0.7;
-  flex-shrink: 0;
-}
-
-/* ----------------------------- Roadmap ---------------------------------- */
-
-.roadmapGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 20px;
-  margin-top: 44px;
-}
-
-.roadmapCard {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 26px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--panel);
-}
-
-.roadmapBadge {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  background: rgba(37, 99, 235, 0.12);
-  color: var(--accent-2);
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.roadmapIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--accent-2);
-}
-
-.roadmapTitle {
-  margin: 0;
-  max-width: 16ch;
-  font-size: 1.08rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.roadmapBody {
-  margin: 0;
-  font-size: 0.92rem;
   line-height: 1.6;
   color: var(--muted);
 }
 
-.roadmapList {
-  margin: 4px 0 0;
-  padding: 14px 0 0;
-  border-top: 1px solid var(--border);
-  list-style: none;
-  display: grid;
-  gap: 9px;
+/* Connector track between two stages. */
+.connector {
+  flex: 0 0 26px;
+  align-self: center;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
 }
 
-.roadmapList li {
+.connectorFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left center;
+}
+
+/* Armed state — only while JS is available and the sequence has not played. */
+html[data-js='1'] .lifecycle:not([data-play]) .step {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+html[data-js='1'] .lifecycle:not([data-play]) .connectorFill {
+  transform: scaleX(0);
+}
+
+html[data-js='1'] .lifecycle:not([data-play]) .stepVerified {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+html[data-js='1'] .lifecycle[data-play='on'] .step {
+  animation: stepIn 440ms var(--ease-out) both;
+}
+
+html[data-js='1'] .lifecycle[data-play='on'] .connectorFill {
+  animation: connectorDrawX 320ms var(--ease-out) both;
+}
+
+html[data-js='1'] .lifecycle[data-play='on'] .stepVerified {
+  animation: verifiedIn 420ms var(--ease-out) both;
+}
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes connectorDrawX {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes connectorDrawY {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+@keyframes verifiedIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ----------------------------- Platform vision -------------------------- */
+
+.availableNow {
   display: flex;
   align-items: center;
-  gap: 9px;
-  font-size: 0.86rem;
-  color: var(--muted-strong);
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 40px;
+  padding: 26px 28px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 14px;
+  background: var(--bg);
 }
 
-.roadmapList li::before {
-  content: '';
-  width: 5px;
-  height: 5px;
+.availableBadge {
+  margin: 0 0 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #15803d;
+}
+
+.availableTitle {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.availableBody {
+  margin: 8px 0 0;
+  max-width: 68ch;
+  font-size: 0.93rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.visionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.visionCard {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 16px;
+  background: var(--bg);
+}
+
+.visionTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.visionIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  color: var(--muted);
+}
+
+.visionBadge {
+  padding: 4px 10px;
   border-radius: 999px;
-  background: var(--accent-2);
-  flex-shrink: 0;
+  border: 1px solid var(--border-strong);
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-/* ----------------------------- Company CTA ------------------------------ */
+.visionTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.visionBody {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+/* ------------------------------ Final CTA ------------------------------- */
 
 .cta {
-  position: relative;
-  margin-block: 84px 0;
-  padding: 44px;
-  border: 1px solid var(--border-strong);
-  border-radius: 24px;
-  /* Bordered CTA panel that reads as a card on the page surface — same card
-     tone as the enterprise/control panels plus a restrained accent, not a
-     full-width blue section band. */
+  padding-block: 72px;
   background:
-    radial-gradient(circle at 12% 50%, rgba(37, 99, 235, 0.1), transparent 55%),
-    linear-gradient(180deg, rgba(18, 34, 60, 0.5), rgba(9, 18, 35, 0.55));
-  overflow: hidden;
+    radial-gradient(900px 420px at 18% 50%, rgba(37, 99, 235, 0.16), transparent 62%),
+    linear-gradient(180deg, #0b1220 0%, #07111f 100%);
+  border-top: 1px solid rgba(148, 178, 216, 0.14);
 }
 
 .ctaInner {
@@ -693,40 +1073,34 @@
 }
 
 .ctaShield {
-  position: relative;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 116px;
-  height: 116px;
-}
-
-.ctaShield::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(56, 130, 246, 0.5), transparent 62%);
-  z-index: -1;
+  width: 84px;
+  height: 84px;
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .ctaText {
   flex: 1;
+  min-width: 0;
 }
 
 .ctaTitle {
   margin: 0;
-  max-width: 22ch;
-  font-size: clamp(1.5rem, 2.4vw, 2rem);
-  line-height: 1.15;
+  max-width: 30ch;
+  font-size: clamp(1.45rem, 2.3vw, 1.95rem);
+  line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--text);
 }
 
 .ctaBody {
   margin: 14px 0 0;
-  max-width: 52ch;
+  max-width: 56ch;
   font-size: 1rem;
   line-height: 1.6;
   color: var(--muted);
@@ -741,30 +1115,45 @@
 
 /* ------------------------------ Responsive ------------------------------ */
 
+@media (max-width: 1100px) {
+  .heroInner {
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+    gap: 40px;
+  }
+  .flagshipGrid,
+  .whyGrid {
+    gap: 40px;
+  }
+}
+
 @media (max-width: 980px) {
+  .section {
+    padding-block: 72px;
+  }
+  .hero {
+    padding-block: 52px 60px;
+  }
   .heroInner {
     grid-template-columns: 1fr;
     gap: 40px;
   }
+  .heroCopy,
   .heroBody {
-    max-width: 60ch;
+    max-width: 62ch;
   }
   .cardGrid3,
-  .previewGrid,
-  .roadmapGrid {
+  .visionGrid {
     grid-template-columns: 1fr 1fr;
   }
-  .whyGrid {
+  .whyGrid,
+  .flagshipGrid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 36px;
   }
-  .lifecycle {
+  .availableNow {
     flex-direction: column;
-  }
-  .stepArrow {
-    justify-content: center;
-    transform: rotate(90deg);
-    padding-block: 2px;
+    align-items: flex-start;
+    gap: 20px;
   }
   .ctaInner {
     flex-direction: column;
@@ -778,20 +1167,65 @@
   }
 }
 
+/* Lifecycle goes vertical: the connector becomes a short vertical rail that
+   draws downward, aligned under each stage's icon. */
+@media (max-width: 900px) {
+  .lifecycle {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 40px;
+  }
+  .connector {
+    flex: 0 0 24px;
+    align-self: flex-start;
+    width: 2px;
+    height: 24px;
+    margin-left: 40px;
+  }
+  .connectorFill {
+    transform-origin: top center;
+  }
+  html[data-js='1'] .lifecycle:not([data-play]) .connectorFill {
+    transform: scaleY(0);
+  }
+  html[data-js='1'] .lifecycle[data-play='on'] .connectorFill {
+    animation-name: connectorDrawY;
+  }
+}
+
 @media (max-width: 680px) {
   .section {
-    padding-block: 60px;
+    padding-block: 56px;
   }
   .hero {
-    padding-block: 40px 56px;
+    padding-block: 40px 52px;
+  }
+  .heroPanel {
+    padding: 18px 16px 14px;
   }
   .cardGrid3,
-  .previewGrid,
-  .roadmapGrid {
+  .visionGrid,
+  .supportingGrid {
     grid-template-columns: 1fr;
   }
+  .card,
+  .visionCard {
+    padding: 22px;
+  }
+  .supportingGrid {
+    margin-top: 40px;
+  }
+  .gPerimeterLabel {
+    display: none;
+  }
+  .gLabel {
+    font-size: 14px;
+  }
+  .gCaption {
+    font-size: 11px;
+  }
   .cta {
-    padding: 30px 22px;
+    padding-block: 52px;
   }
   .ctaActions {
     flex-direction: column;
@@ -799,5 +1233,23 @@
   .ctaActions :global(.button-primary),
   .ctaActions :global(.button-secondary) {
     width: 100%;
+  }
+  .uiMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------- Reduced motion ----------------------------
+   globals.css already removes the animations themselves. These rules drop
+   the armed start state too, so the lifecycle renders in its completed form
+   rather than waiting on an observer that the visitor may never trigger.
+   ------------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-js='1'] .lifecycle:not([data-play]) .step,
+  html[data-js='1'] .lifecycle:not([data-play]) .stepVerified,
+  html[data-js='1'] .lifecycle:not([data-play]) .connectorFill {
+    opacity: 1;
+    transform: none;
   }
 }
