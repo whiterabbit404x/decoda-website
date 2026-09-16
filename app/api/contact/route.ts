@@ -10,6 +10,10 @@
  * core flow can be exercised directly in unit tests.
  */
 import {
+  CONTACT_INVALID_REQUEST,
+  CONTACT_RATE_LIMITED,
+  CONTACT_SEND_FAILED,
+  CONTACT_VALIDATION_FAILED,
   DEFAULT_CONTACT_FROM_EMAIL,
   DEFAULT_CONTACT_TO_EMAIL,
   handleContactSubmission,
@@ -36,7 +40,12 @@ function getClientIp(request: Request): string {
 function json(body: unknown, status: number, headers?: HeadersInit): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json', ...headers },
+    headers: {
+      'content-type': 'application/json',
+      // Never let a proxy or CDN serve a stale submission outcome.
+      'cache-control': 'no-store',
+      ...headers,
+    },
   });
 }
 
@@ -45,7 +54,7 @@ export async function POST(request: Request): Promise<Response> {
   const ip = getClientIp(request);
   const limit = rateLimit(`contact:${ip}`, RATE_LIMIT);
   if (!limit.allowed) {
-    return json({ ok: false, error: 'rate_limited' }, 429, {
+    return json({ ok: false, error: CONTACT_RATE_LIMITED }, 429, {
       'retry-after': String(limit.retryAfterSeconds),
     });
   }
@@ -55,7 +64,7 @@ export async function POST(request: Request): Promise<Response> {
   try {
     body = await request.json();
   } catch {
-    return json({ ok: false, error: 'invalid_request' }, 400);
+    return json({ ok: false, error: CONTACT_INVALID_REQUEST }, 400);
   }
 
   // Resolve recipient/sender from server configuration only.
@@ -78,10 +87,14 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   if (result.status === 400) {
-    return json({ ok: false, error: 'validation', fieldErrors: result.fieldErrors }, 400);
+    return json(
+      { ok: false, error: CONTACT_VALIDATION_FAILED, fieldErrors: result.fieldErrors },
+      400,
+    );
   }
 
-  // Provider/config failure: controlled, generic response. Details were logged
-  // server-side inside handleContactSubmission.
-  return json({ ok: false, error: 'send_failed' }, 502);
+  // Provider/config failure: controlled, generic response. The actionable
+  // diagnostic (missing key vs. unverified domain vs. outage) was logged
+  // server-side inside handleContactSubmission and is deliberately not exposed.
+  return json({ ok: false, error: CONTACT_SEND_FAILED }, 502);
 }

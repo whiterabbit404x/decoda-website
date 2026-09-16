@@ -1,10 +1,11 @@
 'use client';
 
-import { useId, useState, type FormEvent } from 'react';
+import { useId, useRef, useState, type FormEvent } from 'react';
 import {
   FIELD_LIMITS,
   HONEYPOT_FIELD,
   INTEREST_AREAS,
+  interpretContactResponse,
   type ContactFieldErrors,
 } from '@/lib/contact';
 
@@ -14,7 +15,7 @@ type Status = 'idle' | 'submitting' | 'success' | 'error';
 
 const BUTTON_LABEL: Record<Status, string> = {
   idle: 'Request follow-up',
-  submitting: 'Sending...',
+  submitting: 'Sending\u2026',
   success: 'Request sent',
   error: 'Try again',
 };
@@ -29,6 +30,11 @@ export function ContactForm() {
   const [status, setStatus] = useState<Status>('idle');
   const [fieldErrors, setFieldErrors] = useState<ContactFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Synchronous in-flight latch. `status` only updates on the next render, so a
+  // double-click landing in the same tick would otherwise slip past the state
+  // check and fire a second request.
+  const inFlight = useRef(false);
 
   const baseId = useId();
   const fieldId = (name: string) => `${baseId}-${name}`;
@@ -47,9 +53,10 @@ export function ContactForm() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSubmitting) {
+    if (inFlight.current) {
       return; // guard against duplicate submissions
     }
+    inFlight.current = true;
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -73,22 +80,20 @@ export function ContactForm() {
         body: JSON.stringify(payload),
       });
 
-      if (response.ok) {
+      const data: unknown = await response.json().catch(() => null);
+      // A 2xx alone is never treated as delivery — see interpretContactResponse.
+      const outcome = interpretContactResponse(response.status, data);
+
+      if (outcome.kind === 'success') {
         setStatus('success');
-        form.reset();
+        form.reset(); // cleared only after confirmed delivery
         return;
       }
 
-      const data: unknown = await response.json().catch(() => null);
-      const parsed = (data && typeof data === 'object' ? data : {}) as {
-        error?: string;
-        fieldErrors?: ContactFieldErrors;
-      };
-
-      if (response.status === 400 && parsed.error === 'validation' && parsed.fieldErrors) {
-        setFieldErrors(parsed.fieldErrors);
+      if (outcome.kind === 'validation') {
+        setFieldErrors(outcome.fieldErrors);
         setFormError('Please correct the highlighted fields and try again.');
-      } else if (response.status === 429) {
+      } else if (outcome.kind === 'rate_limited') {
         setFormError('You have sent several requests in a row. Please wait a moment and try again.');
       } else {
         // Generic failure — the inline fallback (with a mailto link) is shown.
@@ -99,6 +104,8 @@ export function ContactForm() {
       // Network/unexpected error — show the generic fallback.
       setFormError(null);
       setStatus('error');
+    } finally {
+      inFlight.current = false;
     }
   }
 
@@ -230,7 +237,11 @@ export function ContactForm() {
         />
       </div>
 
-      <button type="submit" className="button-primary" disabled={isSubmitting}>
+      <button
+        type="submit"
+        className="button-primary"
+        disabled={isSubmitting || status === 'success'}
+      >
         {BUTTON_LABEL[status]}
       </button>
 
@@ -238,8 +249,8 @@ export function ContactForm() {
       <div aria-live="polite" role="status">
         {status === 'success' ? (
           <p className="form-status form-status--success">
-            Thanks — your request has been sent to the Decoda team. We&apos;ll follow up using the
-            work email you provided.
+            Thanks — your request has been sent. We&apos;ll follow up using the work email you
+            provided.
           </p>
         ) : null}
       </div>

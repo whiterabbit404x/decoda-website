@@ -2,9 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   buildNotificationEmail,
+  CONTACT_RATE_LIMITED,
+  CONTACT_SEND_FAILED,
+  CONTACT_VALIDATION_FAILED,
   DEFAULT_CONTACT_FROM_EMAIL,
   DEFAULT_CONTACT_TO_EMAIL,
+  describeSendFailure,
+  EmailDeliveryError,
   handleContactSubmission,
+  interpretContactResponse,
+  redactSecrets,
   validateContactSubmission,
   type EmailMessage,
   type HandleContactOptions,
@@ -102,7 +109,61 @@ test('provider failure returns a controlled 502 and never throws or leaks detail
 
   assert.equal(result.ok, false);
   assert.equal(result.status, 502);
-  assert.ok(!result.ok && result.status === 502 && result.error === 'send_failed');
+  assert.ok(!result.ok && result.status === 502 && result.error === CONTACT_SEND_FAILED);
+  // The generic code is all the browser ever receives.
+  assert.equal(JSON.stringify(result).includes('sensitive provider detail'), false);
+});
+
+test('a missing API key is logged as an actionable config failure, not a generic one', async () => {
+  const logged: unknown[] = [];
+  const sendEmail = async () => {
+    throw new EmailDeliveryError('RESEND_API_KEY is not set in this environment', {
+      reason: 'config',
+      code: 'MISSING_API_KEY',
+    });
+  };
+
+  const result = await handleContactSubmission(validBody, {
+    ...baseOptions(sendEmail),
+    logger: { error: (...args: unknown[]) => logged.push(args) },
+  });
+
+  assert.equal(result.ok, false);
+  const details = (logged[0] as unknown[])[1] as Record<string, unknown>;
+  assert.equal(details.reason, 'config');
+  assert.equal(details.code, 'MISSING_API_KEY');
+});
+
+test('an unverified sending domain is logged with the provider explanation', async () => {
+  const logged: unknown[] = [];
+  const sendEmail = async () => {
+    throw new EmailDeliveryError('Resend rejected the send', {
+      reason: 'config',
+      code: 'validation_error',
+      statusCode: 403,
+      providerMessage: 'The decodasecurity.com domain is not verified.',
+    });
+  };
+
+  await handleContactSubmission(validBody, {
+    ...baseOptions(sendEmail),
+    logger: { error: (...args: unknown[]) => logged.push(args) },
+  });
+
+  const details = (logged[0] as unknown[])[1] as Record<string, unknown>;
+  assert.equal(details.statusCode, 403);
+  assert.match(String(details.providerMessage), /not verified/);
+});
+
+test('provider credentials are redacted before anything is logged', () => {
+  const described = describeSendFailure(
+    new Error('auth failed for key re_AbC123SuperSecretValue using Bearer re_AbC123SuperSecretValue'),
+  );
+  const serialized = JSON.stringify(described);
+
+  assert.equal(serialized.includes('re_AbC123SuperSecretValue'), false);
+  assert.match(serialized, /re_\[redacted\]/);
+  assert.equal(redactSecrets('plain text with no secret'), 'plain text with no secret');
 });
 
 // --- Recipient protection ---------------------------------------------------
@@ -223,4 +284,50 @@ test('notification HTML escapes user-supplied markup', () => {
   assert.ok(!built.html.includes('<script>'));
   assert.ok(!built.html.includes('<img src=x'));
   assert.match(built.html, /&lt;script&gt;/);
+});
+
+
+// --- Client response contract ----------------------------------------------
+//
+// These cover the rule that caused the production failure to be indistinguishable
+// from a success: the browser must never treat a bare 2xx as delivery.
+
+test('success is reported only when the body confirms ok: true', () => {
+  assert.deepEqual(interpretContactResponse(200, { ok: true }), { kind: 'success' });
+});
+
+test('a 2xx response without ok:true is treated as a failure, not a success', () => {
+  assert.equal(interpretContactResponse(200, { ok: false }).kind, 'failed');
+  assert.equal(interpretContactResponse(200, {}).kind, 'failed');
+  assert.equal(interpretContactResponse(200, null).kind, 'failed');
+  assert.equal(interpretContactResponse(204, 'not json at all').kind, 'failed');
+});
+
+test('a 502 send failure maps to the generic failure state', () => {
+  const outcome = interpretContactResponse(502, { ok: false, error: CONTACT_SEND_FAILED });
+  assert.equal(outcome.kind, 'failed');
+});
+
+test('validation errors are surfaced against their fields', () => {
+  const outcome = interpretContactResponse(400, {
+    ok: false,
+    error: CONTACT_VALIDATION_FAILED,
+    fieldErrors: { email: 'Please enter a valid email address.' },
+  });
+
+  assert.equal(outcome.kind, 'validation');
+  assert.equal(
+    outcome.kind === 'validation' ? outcome.fieldErrors.email : undefined,
+    'Please enter a valid email address.',
+  );
+});
+
+test('rate limiting maps to its own state', () => {
+  assert.equal(interpretContactResponse(429, { ok: false, error: CONTACT_RATE_LIMITED }).kind,
+    'rate_limited');
+});
+
+test('a 404 from a missing/undeployed route is a failure, never a success', () => {
+  // A 404 returns an HTML body, so JSON parsing yields null upstream.
+  assert.equal(interpretContactResponse(404, null).kind, 'failed');
 });

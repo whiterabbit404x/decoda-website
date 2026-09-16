@@ -42,6 +42,15 @@ export const CONTACT_PAGE_URL = 'decodasecurity.com/contact';
 export const DEFAULT_CONTACT_TO_EMAIL = 'hello@decodasecurity.com';
 export const DEFAULT_CONTACT_FROM_EMAIL = 'Decoda Website <noreply@decodasecurity.com>';
 
+/**
+ * Stable, non-sensitive error codes returned to the browser. The client keys
+ * its messaging off these, so they are part of the API contract.
+ */
+export const CONTACT_SEND_FAILED = 'CONTACT_SEND_FAILED';
+export const CONTACT_VALIDATION_FAILED = 'CONTACT_VALIDATION_FAILED';
+export const CONTACT_INVALID_REQUEST = 'CONTACT_INVALID_REQUEST';
+export const CONTACT_RATE_LIMITED = 'CONTACT_RATE_LIMITED';
+
 /** Name of the hidden honeypot field the form renders but humans never fill. */
 export const HONEYPOT_FIELD = 'company_website';
 
@@ -160,6 +169,53 @@ export function validateContactSubmission(raw: unknown): ValidationResult {
   return { success: true, data: { name, email, company, interestArea, message } };
 }
 
+/**
+ * Outcome the client should render for a given API response. Extracted from the
+ * form component so the single most important client-side rule — a 2xx status is
+ * NOT on its own proof of delivery — is unit-testable without a DOM.
+ */
+export type ContactClientOutcome =
+  | { kind: 'success' }
+  | { kind: 'validation'; fieldErrors: ContactFieldErrors }
+  | { kind: 'rate_limited' }
+  | { kind: 'failed' };
+
+/**
+ * Map an HTTP status + parsed JSON body to what the form should display.
+ *
+ * Success is returned ONLY when the response is 2xx *and* the body carries an
+ * explicit `ok: true`, which the server sets only after the email provider has
+ * accepted the message. Anything else — including a 2xx with a falsy/absent
+ * `ok`, an unparsable body, or a proxy-injected page — is a failure.
+ */
+export function interpretContactResponse(status: number, body: unknown): ContactClientOutcome {
+  const parsed = (body && typeof body === 'object' ? body : {}) as {
+    ok?: unknown;
+    error?: unknown;
+    fieldErrors?: ContactFieldErrors;
+  };
+
+  const isSuccessStatus = status >= 200 && status < 300;
+  if (isSuccessStatus && parsed.ok === true) {
+    return { kind: 'success' };
+  }
+
+  if (
+    status === 400 &&
+    parsed.error === CONTACT_VALIDATION_FAILED &&
+    parsed.fieldErrors &&
+    typeof parsed.fieldErrors === 'object'
+  ) {
+    return { kind: 'validation', fieldErrors: parsed.fieldErrors };
+  }
+
+  if (status === 429 || parsed.error === CONTACT_RATE_LIMITED) {
+    return { kind: 'rate_limited' };
+  }
+
+  return { kind: 'failed' };
+}
+
 export interface BuiltEmail {
   subject: string;
   text: string;
@@ -256,6 +312,78 @@ export function buildConfirmationEmail(data: ContactSubmission): BuiltEmail {
   return { subject: "We've received your Decoda Security inquiry", text, html };
 }
 
+/**
+ * Strip anything that looks like a provider credential out of text that is
+ * about to be logged. Resend keys are `re_...`; the generic bearer/token shapes
+ * are covered too. Defense-in-depth: provider error messages are not expected
+ * to echo credentials, but logs must never be the place we find out otherwise.
+ */
+export function redactSecrets(value: string): string {
+  return value
+    .replace(/\bre_[A-Za-z0-9_-]{4,}/g, 're_[redacted]')
+    .replace(/\b(bearer\s+)[A-Za-z0-9._-]{8,}/gi, '$1[redacted]');
+}
+
+export type EmailFailureReason = 'config' | 'provider';
+
+export interface EmailDeliveryErrorDetails {
+  /**
+   * `config` means a human must change an environment variable or verify a
+   * sending domain — retrying will never help. `provider` means the request was
+   * well-formed but the provider did not accept it (outage, throttling,
+   * transport failure) and a retry may succeed.
+   */
+  reason: EmailFailureReason;
+  /** Stable, non-sensitive identifier, e.g. `MISSING_API_KEY`, `validation_error`. */
+  code: string;
+  /** HTTP status returned by the provider, when there was one. */
+  statusCode?: number;
+  /** Provider-supplied explanation, already redacted. Server logs only. */
+  providerMessage?: string;
+  cause?: unknown;
+}
+
+/**
+ * Raised by an `EmailSender` implementation. Carries enough structure for an
+ * operator to diagnose the failure from server logs alone, while the browser
+ * still only ever receives a generic error code.
+ */
+export class EmailDeliveryError extends Error {
+  readonly reason: EmailFailureReason;
+  readonly code: string;
+  readonly statusCode?: number;
+  readonly providerMessage?: string;
+
+  constructor(message: string, details: EmailDeliveryErrorDetails) {
+    super(message, details.cause !== undefined ? { cause: details.cause } : undefined);
+    this.name = 'EmailDeliveryError';
+    this.reason = details.reason;
+    this.code = details.code;
+    this.statusCode = details.statusCode;
+    this.providerMessage = details.providerMessage;
+  }
+}
+
+/**
+ * Reduce any thrown value to a flat, secret-free record suitable for a
+ * structured server log line.
+ */
+export function describeSendFailure(error: unknown): Record<string, unknown> {
+  if (error instanceof EmailDeliveryError) {
+    return {
+      reason: error.reason,
+      code: error.code,
+      ...(error.statusCode !== undefined ? { statusCode: error.statusCode } : {}),
+      ...(error.providerMessage ? { providerMessage: error.providerMessage } : {}),
+    };
+  }
+  return {
+    reason: 'provider',
+    code: 'UNEXPECTED_ERROR',
+    providerMessage: redactSecrets(error instanceof Error ? error.message : String(error)),
+  };
+}
+
 export interface EmailMessage {
   to: string;
   from: string;
@@ -289,7 +417,7 @@ export interface HandleContactOptions {
 export type ContactResult =
   | { ok: true; status: 200 }
   | { ok: false; status: 400; fieldErrors: ContactFieldErrors }
-  | { ok: false; status: 502; error: 'send_failed' };
+  | { ok: false; status: 502; error: typeof CONTACT_SEND_FAILED };
 
 /**
  * Orchestrate a contact submission end-to-end:
@@ -339,8 +467,10 @@ export async function handleContactSubmission(
       html: notification.html,
     });
   } catch (error) {
-    logger.error('[contact] primary notification send failed', error);
-    return { ok: false, status: 502, error: 'send_failed' };
+    // Actionable, secret-free diagnostic. `reason: 'config'` means an env var
+    // or sending-domain change is required; `provider` means a retry may help.
+    logger.error('[contact] primary notification send failed', describeSendFailure(error));
+    return { ok: false, status: 502, error: CONTACT_SEND_FAILED };
   }
 
   if (options.sendConfirmation) {
@@ -355,7 +485,10 @@ export async function handleContactSubmission(
       });
     } catch (error) {
       // Non-fatal: the primary notification already succeeded.
-      logger.error('[contact] visitor confirmation send failed (non-fatal)', error);
+      logger.error(
+        '[contact] visitor confirmation send failed (non-fatal)',
+        describeSendFailure(error),
+      );
     }
   }
 
