@@ -194,3 +194,12 @@ export function IconCheck(props: IconProps) {
     </Icon>
   );
 }
+
+export function IconExternal(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M14 5h5v5M19 5l-7.5 7.5" />
+      <path d="M18 14.5V18a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 4 18V7a1.5 1.5 0 0 1 1.5-1.5H9" />
+    </Icon>
+  );
+}

@@ -13,7 +13,7 @@ const navItems = [
 
 export function SiteHeader() {
   return (
-    <header className={styles.header}>
+    <header className={`surface-dark ${styles.header}`}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} aria-label="Decoda Security — home">
           <DecodaLogo className={styles.logo} size={32} />
@@ -33,13 +33,15 @@ export function SiteHeader() {
             <IconArrowRight size={16} />
           </Link>
 
+          {/* Disclosure-based mobile menu: native expanded/collapsed semantics
+              and keyboard support, with no client JavaScript. */}
           <details className={styles.menu}>
-            <summary className={styles.menuSummary} aria-label="Open menu">
+            <summary className={styles.menuSummary} aria-label="Menu">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
                 <path d="M4 7h16M4 12h16M4 17h16" />
               </svg>
             </summary>
-            <div className={styles.menuPanel}>
+            <nav className={styles.menuPanel} aria-label="Primary (mobile)">
               {navItems.map((item) => (
                 <Link key={item.href} href={item.href} className={styles.navLink}>
                   {item.label}
@@ -49,7 +51,7 @@ export function SiteHeader() {
                 Request a demo
                 <IconArrowRight size={16} />
               </Link>
-            </div>
+            </nav>
           </details>
         </div>
       </div>

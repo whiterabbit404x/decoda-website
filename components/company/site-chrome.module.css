@@ -1,6 +1,9 @@
 /* ==========================================================================
    Site chrome (header + footer) — scoped to the public marketing site.
-   Uses the shared design tokens defined in app/globals.css.
+
+   Both carry the global `.surface-dark` class in their markup, so the tokens
+   referenced below already resolve to their navy values. They stay dark on
+   every route, framing the light workspace body between them.
    ========================================================================== */
 
 /* ------------------------------- Header --------------------------------- */
@@ -11,7 +14,7 @@
   z-index: 50;
   width: 100%;
   border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -22,7 +25,7 @@
   gap: 24px;
   width: 100%;
   max-width: var(--container);
-  min-height: 60px;
+  min-height: 64px;
   margin: 0 auto;
   padding-inline: var(--gutter);
 }
@@ -48,7 +51,7 @@
 }
 
 .logo [data-decoda-wordmark] strong {
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 700;
   letter-spacing: 0.16em;
   color: var(--text);
@@ -65,11 +68,14 @@
 .nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   margin-inline: auto;
 }
 
 .navLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
   padding: 8px 14px;
   border-radius: 8px;
   font-size: 0.92rem;
@@ -99,9 +105,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid var(--border);
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border-strong);
   border-radius: 10px;
   background: var(--panel-2);
   color: var(--text);
@@ -117,7 +123,7 @@
    so it spans the viewport minus the page gutters instead of clipping. */
 .menuPanel {
   position: absolute;
-  top: 68px;
+  top: 72px;
   right: var(--gutter);
   left: var(--gutter);
   z-index: 60;
@@ -127,10 +133,11 @@
   border: 1px solid var(--border-strong);
   border-radius: 14px;
   background: var(--panel-solid);
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow-lg);
 }
 
 .menuPanel .navLink {
+  min-height: 46px;
   padding: 12px 14px;
   font-size: 1rem;
 }
@@ -143,10 +150,7 @@
 
 .footer {
   width: 100%;
-  margin-top: 96px;
   border-top: 1px solid var(--border);
-  /* Same flat page surface as the rest of the site — separated only by the
-     top border, never by a darker fill. */
   background: var(--bg);
 }
 
@@ -159,7 +163,7 @@
 
 .footerTop {
   display: grid;
-  grid-template-columns: 1.6fr repeat(3, 1fr) 1.5fr;
+  grid-template-columns: 1.6fr 1fr 1fr 1.5fr;
   gap: 40px 32px;
 }
 
@@ -174,8 +178,8 @@
   color: var(--muted);
 }
 
-.footerCol h3,
-.footerCta h3 {
+.footerCol h2,
+.footerCta h2 {
   margin: 0 0 16px;
   font-size: 0.72rem;
   font-weight: 700;
@@ -189,10 +193,15 @@
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 10px;
+  gap: 4px;
 }
 
+/* min-height keeps each footer link at or above the 24px minimum target size
+   while preserving the column's original vertical rhythm. */
 .footerCol a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
   font-size: 0.92rem;
   color: var(--muted-strong);
   transition: color 150ms ease;
