@@ -9,12 +9,14 @@ import {
   DEFAULT_CONTACT_TO_EMAIL,
   describeSendFailure,
   EmailDeliveryError,
+  extractSenderDomain,
   handleContactSubmission,
   interpretContactResponse,
+  readEnvValue,
   redactSecrets,
-  validateContactSubmission,
   type EmailMessage,
   type HandleContactOptions,
+  validateContactSubmission,
 } from './contact';
 
 const validBody = {
@@ -330,4 +332,82 @@ test('rate limiting maps to its own state', () => {
 test('a 404 from a missing/undeployed route is a failure, never a success', () => {
   // A 404 returns an HTML body, so JSON parsing yields null upstream.
   assert.equal(interpretContactResponse(404, null).kind, 'failed');
+});
+
+// --- Environment value normalization ----------------------------------------
+// A hosting dashboard stores what is pasted, quotes and all. `.env.example`
+// documents CONTACT_FROM_EMAIL wrapped in double quotes, so this is the most
+// likely way a correct-looking production config still fails every send.
+
+test('readEnvValue strips a surrounding pair of double quotes', () => {
+  assert.equal(
+    readEnvValue('"Decoda Website <noreply@decodasecurity.com>"'),
+    'Decoda Website <noreply@decodasecurity.com>',
+  );
+});
+
+test('readEnvValue strips a surrounding pair of single quotes', () => {
+  assert.equal(readEnvValue("'hello@decodasecurity.com'"), 'hello@decodasecurity.com');
+});
+
+test('readEnvValue trims surrounding whitespace and newlines', () => {
+  assert.equal(readEnvValue('  re_example_key \n'), 're_example_key');
+});
+
+test('readEnvValue leaves an unquoted value untouched', () => {
+  assert.equal(
+    readEnvValue('Decoda Website <noreply@decodasecurity.com>'),
+    'Decoda Website <noreply@decodasecurity.com>',
+  );
+});
+
+test('readEnvValue does not strip unbalanced or interior quotes', () => {
+  assert.equal(readEnvValue('"Decoda Website" <noreply@decodasecurity.com>'),
+    '"Decoda Website" <noreply@decodasecurity.com>');
+  assert.equal(readEnvValue('"unterminated'), '"unterminated');
+});
+
+test('readEnvValue never invents a value for a missing variable', () => {
+  assert.equal(readEnvValue(undefined), '');
+  assert.equal(readEnvValue(null), '');
+  assert.equal(readEnvValue(''), '');
+  assert.equal(readEnvValue('   '), '');
+  assert.equal(readEnvValue('""'), '');
+});
+
+// --- Sender domain extraction -----------------------------------------------
+
+test('extractSenderDomain reads the domain from a display-name address', () => {
+  assert.equal(
+    extractSenderDomain('Decoda Website <noreply@decodasecurity.com>'),
+    'decodasecurity.com',
+  );
+});
+
+test('extractSenderDomain reads the domain from a bare address', () => {
+  assert.equal(extractSenderDomain('noreply@decodasecurity.com'), 'decodasecurity.com');
+});
+
+test('readEnvValue + extractSenderDomain recover the domain from the paste hazard', () => {
+  // `"Decoda Website <noreply@decodasecurity.com>"` is what a hosting dashboard
+  // stores when .env.example is pasted verbatim. readEnvValue strips the quotes
+  // before the value is ever used as a From header, which is what keeps the
+  // provider from rejecting the send.
+  const pasted = '"Decoda Website <noreply@decodasecurity.com>"';
+  const normalized = readEnvValue(pasted);
+  assert.equal(normalized, 'Decoda Website <noreply@decodasecurity.com>');
+  assert.equal(extractSenderDomain(normalized), 'decodasecurity.com');
+});
+
+test('extractSenderDomain reads the bracketed address even around stray text', () => {
+  // Lenient on purpose: this feeds the operator diagnostic, so naming the
+  // domain to verify is more useful than refusing to parse.
+  assert.equal(extractSenderDomain('Decoda <noreply@decodasecurity.com> '), 'decodasecurity.com');
+});
+
+test('extractSenderDomain returns null for a malformed sender', () => {
+  assert.equal(extractSenderDomain('not-an-address'), null);
+  assert.equal(extractSenderDomain('@decodasecurity.com'), null);
+  assert.equal(extractSenderDomain('noreply@'), null);
+  assert.equal(extractSenderDomain(''), null);
 });
