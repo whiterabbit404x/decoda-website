@@ -324,6 +324,51 @@ export function redactSecrets(value: string): string {
     .replace(/\b(bearer\s+)[A-Za-z0-9._-]{8,}/gi, '$1[redacted]');
 }
 
+/**
+ * Read a configuration value the way a hosting dashboard actually delivers it.
+ *
+ * A `.env` file is parsed by dotenv, which strips surrounding quotes. The Vercel
+ * (and most other) dashboards do NOT: whatever is pasted into the value box is
+ * the literal value. Because `.env.example` documents the sender as
+ * `CONTACT_FROM_EMAIL="Decoda Website <noreply@decodasecurity.com>"`, pasting
+ * that line's value verbatim yields an address wrapped in literal double quotes,
+ * which is not a valid RFC 5322 address — the provider then rejects every send.
+ *
+ * So: trim, and strip ONE matching pair of surrounding quotes. A missing or
+ * empty variable still resolves to '' and still fails safely — this never
+ * invents a value.
+ */
+export function readEnvValue(raw: string | undefined | null): string {
+  if (typeof raw !== 'string') {
+    return '';
+  }
+  const trimmed = raw.trim();
+  if (trimmed.length >= 2) {
+    const first = trimmed[0];
+    const last = trimmed[trimmed.length - 1];
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+      return trimmed.slice(1, -1).trim();
+    }
+  }
+  return trimmed;
+}
+
+/**
+ * Extract the domain from a bare address or a "Display Name <addr@domain>"
+ * header value. Returns null when no address can be read — which is itself the
+ * signal that the configured sender is malformed.
+ */
+export function extractSenderDomain(fromValue: string): string | null {
+  const angled = /<([^>]+)>/.exec(fromValue);
+  const address = (angled ? angled[1] : fromValue).trim();
+  const at = address.lastIndexOf('@');
+  if (at <= 0 || at === address.length - 1) {
+    return null;
+  }
+  const domain = address.slice(at + 1).trim().toLowerCase();
+  return /^[^\s@]+\.[^\s@]+$/.test(domain) ? domain : null;
+}
+
 export type EmailFailureReason = 'config' | 'provider';
 
 export interface EmailDeliveryErrorDetails {

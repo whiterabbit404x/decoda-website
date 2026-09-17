@@ -78,8 +78,40 @@ delivery id.
 
 ### Diagnosing a failed submission
 
+`GET /api/contact` reports this deployment's configuration without exposing any
+credential. It is the fastest way to tell the two causes of a `502` apart:
+
+```bash
+curl -s https://www.decodasecurity.com/api/contact
+curl -s "https://www.decodasecurity.com/api/contact?check=provider"   # also tests the key + domain
+```
+
+```json
+{
+  "ok": true,
+  "env": { "RESEND_API_KEY": "MISSING", "CONTACT_FROM_EMAIL": "using default", ... },
+  "resolved": { "to": "hello@decodasecurity.com", "from": "Decoda Website <noreply@decodasecurity.com>" },
+  "provider": {
+    "apiKey": "missing",
+    "senderDomain": "decodasecurity.com",
+    "senderDomainStatus": "unknown",
+    "summary": "RESEND_API_KEY is not configured in this environment. ..."
+  }
+}
+```
+
+The key itself is never returned — only whether one is present and whether the
+provider accepted it. `?check=provider` makes one upstream call and is covered
+by the same per-IP rate limit.
+
+> **Dashboard paste hazard.** A hosting dashboard stores pasted quotes
+> literally, unlike a `.env` parser which strips them. `CONTACT_FROM_EMAIL` set
+> to `"Decoda Website <noreply@decodasecurity.com>"` *with* quotes is not a
+> valid address and the provider rejects every send. Values are now trimmed and
+> unwrapped on read, but paste them **without** quotes.
+
 Provider errors are never shown to visitors, so `502 CONTACT_SEND_FAILED` is
-diagnosed from the server logs (Vercel → Deployment → Functions →
+also diagnosed from the server logs (Vercel → Deployment → Functions →
 `/api/contact`). Each failure logs one structured, secret-free line:
 
 ```
@@ -96,6 +128,7 @@ diagnosed from the server logs (Vercel → Deployment → Functions →
 | `code: 'MISSING_API_KEY'` | `RESEND_API_KEY` is not set for this environment. Add it and redeploy. |
 | `statusCode: 401`, `API key is invalid` | The key is wrong or revoked. Issue a new one. |
 | `statusCode: 403`, `… domain is not verified` | Verify the `CONTACT_FROM_EMAIL` domain in Resend. |
+| `statusCode: 422`, invalid `from` | `CONTACT_FROM_EMAIL` is malformed — check for stray quotes. |
 | `reason: 'provider'` | Transient provider/transport failure; the visitor can retry. |
 
 API keys are redacted from anything this path logs.

@@ -12,12 +12,21 @@
  * returning a single generic error to the browser.
  */
 import { Resend } from 'resend';
-import { EmailDeliveryError, redactSecrets, type EmailMessage } from './contact';
+import {
+  EmailDeliveryError,
+  extractSenderDomain,
+  readEnvValue,
+  redactSecrets,
+  type EmailMessage,
+} from './contact';
 
 let cachedClient: { apiKey: string; client: Resend } | null = null;
 
 function getClient(): Resend {
-  const apiKey = process.env.RESEND_API_KEY?.trim();
+  // readEnvValue also strips a surrounding pair of quotes: a key pasted into a
+  // hosting dashboard as "re_..." would otherwise be sent verbatim and rejected
+  // as an invalid credential.
+  const apiKey = readEnvValue(process.env.RESEND_API_KEY);
   if (!apiKey) {
     // Thrown (not returned) so orchestration maps it to a controlled failure.
     // The message intentionally contains no secret material.
@@ -116,4 +125,120 @@ export async function sendEmailViaResend(message: EmailMessage): Promise<{ id?: 
   }
 
   return readResendEnvelope(envelope);
+}
+
+/**
+ * Secret-free configuration report for the contact pipeline.
+ *
+ * Every field is a status name or a public value (the sending DOMAIN, which
+ * appears in the From header of every email this site sends). The API key is
+ * never included, never echoed, and never returned in any form — only whether
+ * one is present and whether the provider accepted it.
+ */
+export interface ProviderDiagnostics {
+  /** Is a key configured for THIS environment, and does the provider accept it? */
+  apiKey: 'missing' | 'accepted' | 'rejected' | 'unknown';
+  /** Domain parsed out of CONTACT_FROM_EMAIL, or null when it is malformed. */
+  senderDomain: string | null;
+  /** Verification state of that domain in the Resend account. */
+  senderDomainStatus:
+    | 'verified'
+    | 'partially_verified'
+    | 'pending'
+    | 'failed'
+    | 'not_started'
+    | 'partially_failed'
+    | 'not_in_account'
+    | 'unknown';
+  /** Plain-language next action for an operator. */
+  summary: string;
+}
+
+/**
+ * Ask the provider whether the current credentials and sending domain would
+ * actually permit a send — without sending anything. This is what turns an
+ * opaque 502 into a named, fixable cause.
+ */
+export async function checkProviderConfiguration(fromEmail: string): Promise<ProviderDiagnostics> {
+  const senderDomain = extractSenderDomain(fromEmail);
+
+  if (!readEnvValue(process.env.RESEND_API_KEY)) {
+    return {
+      apiKey: 'missing',
+      senderDomain,
+      senderDomainStatus: 'unknown',
+      summary:
+        'RESEND_API_KEY is not configured in this environment. Add it in the hosting ' +
+        'provider settings for the Production scope, then redeploy.',
+    };
+  }
+
+  if (!senderDomain) {
+    return {
+      apiKey: 'unknown',
+      senderDomain: null,
+      senderDomainStatus: 'unknown',
+      summary:
+        'CONTACT_FROM_EMAIL is not a usable address. Expected `Name <user@domain.tld>` ' +
+        'or `user@domain.tld`, with NO surrounding quotes.',
+    };
+  }
+
+  let response: Awaited<ReturnType<Resend['domains']['list']>>;
+  try {
+    response = await getClient().domains.list();
+  } catch (cause) {
+    return {
+      apiKey: 'unknown',
+      senderDomain,
+      senderDomainStatus: 'unknown',
+      summary:
+        'Could not reach the email provider to verify configuration: ' +
+        redactSecrets(cause instanceof Error ? cause.message : String(cause)),
+    };
+  }
+
+  if (response.error) {
+    const providerMessage = redactSecrets(response.error.message ?? '');
+    const statusCode = response.error.statusCode ?? undefined;
+    const rejected = statusCode === 401 || statusCode === 403;
+    return {
+      apiKey: rejected ? 'rejected' : 'unknown',
+      senderDomain,
+      senderDomainStatus: 'unknown',
+      summary: rejected
+        ? `The provider rejected the configured API key (HTTP ${statusCode}). Replace ` +
+          'RESEND_API_KEY with a valid key for the Production scope and redeploy. ' +
+          'A key pasted with surrounding quotes is the usual cause.'
+        : `The provider returned an error while listing domains: ${providerMessage}`,
+    };
+  }
+
+  const domains = response.data?.data ?? [];
+  const match = domains.find((domain) => domain.name.toLowerCase() === senderDomain);
+
+  if (!match) {
+    return {
+      apiKey: 'accepted',
+      senderDomain,
+      senderDomainStatus: 'not_in_account',
+      summary:
+        `The API key is valid, but "${senderDomain}" is not a domain in this Resend ` +
+        'account. Either add and verify it at https://resend.com/domains, or set ' +
+        'CONTACT_FROM_EMAIL to an address on a domain that is already verified.',
+    };
+  }
+
+  const verified = match.status === 'verified' || match.status === 'partially_verified';
+  return {
+    apiKey: 'accepted',
+    senderDomain,
+    senderDomainStatus: match.status,
+    summary: verified
+      ? `Configuration looks correct: the API key is valid and "${senderDomain}" is ` +
+        `${match.status}. Sending should succeed.`
+      : `The API key is valid, but "${senderDomain}" is "${match.status}", not verified. ` +
+        'Complete DNS verification at https://resend.com/domains — every send is ' +
+        'rejected until it is verified.',
+  };
 }

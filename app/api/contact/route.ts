@@ -17,8 +17,9 @@ import {
   DEFAULT_CONTACT_FROM_EMAIL,
   DEFAULT_CONTACT_TO_EMAIL,
   handleContactSubmission,
+  readEnvValue,
 } from '@/lib/contact';
-import { sendEmailViaResend } from '@/lib/email';
+import { checkProviderConfiguration, sendEmailViaResend } from '@/lib/email';
 import { rateLimit } from '@/lib/rate-limit';
 
 // Run on the Node.js runtime: the Resend SDK and the in-memory rate limiter
@@ -49,6 +50,68 @@ function json(body: unknown, status: number, headers?: HeadersInit): Response {
   });
 }
 
+/**
+ * Resolve contact configuration from the environment.
+ *
+ * `readEnvValue` trims and strips one surrounding pair of quotes. Hosting
+ * dashboards (unlike a dotenv parser) store pasted quotes literally, so a value
+ * copied straight out of `.env.example` would otherwise become part of the
+ * address and make every send fail. Missing values still fall back to the
+ * committed defaults; a missing API KEY is never defaulted — it fails safely.
+ */
+function readContactConfig() {
+  return {
+    toEmail: readEnvValue(process.env.CONTACT_TO_EMAIL) || DEFAULT_CONTACT_TO_EMAIL,
+    fromEmail: readEnvValue(process.env.CONTACT_FROM_EMAIL) || DEFAULT_CONTACT_FROM_EMAIL,
+    // Visitor acknowledgment is on by default; set CONTACT_SEND_CONFIRMATION=false
+    // to disable it.
+    sendConfirmation: readEnvValue(process.env.CONTACT_SEND_CONFIRMATION) !== 'false',
+  };
+}
+
+/**
+ * GET /api/contact — operational diagnostics for this deployment.
+ *
+ * Answers the one question a 502 cannot: WHICH part of the configuration is
+ * wrong. It reports status names and the public sending domain only — never the
+ * API key, never any credential, and never a visitor's data. `?check=provider`
+ * additionally asks the provider to confirm the key and domain verification
+ * state (one upstream call, covered by the same per-IP rate limit).
+ */
+export async function GET(request: Request): Promise<Response> {
+  const limit = rateLimit(`contact-diag:${getClientIp(request)}`, RATE_LIMIT);
+  if (!limit.allowed) {
+    return json({ ok: false, error: CONTACT_RATE_LIMITED }, 429, {
+      'retry-after': String(limit.retryAfterSeconds),
+    });
+  }
+
+  const { toEmail, fromEmail, sendConfirmation } = readContactConfig();
+
+  const env = {
+    RESEND_API_KEY: readEnvValue(process.env.RESEND_API_KEY) ? 'set' : 'MISSING',
+    CONTACT_TO_EMAIL: readEnvValue(process.env.CONTACT_TO_EMAIL) ? 'set' : 'using default',
+    CONTACT_FROM_EMAIL: readEnvValue(process.env.CONTACT_FROM_EMAIL) ? 'set' : 'using default',
+    CONTACT_SEND_CONFIRMATION: sendConfirmation ? 'enabled' : 'disabled',
+  };
+
+  // Recipient and sender are not secrets — both appear in the headers of every
+  // message this site sends — and seeing them is how a misconfigured value
+  // (stray quotes, wrong address) gets spotted.
+  const resolved = { to: toEmail, from: fromEmail };
+
+  const url = new URL(request.url);
+  if (url.searchParams.get('check') !== 'provider') {
+    return json(
+      { ok: true, env, resolved, hint: 'Add ?check=provider to test the key and sending domain.' },
+      200,
+    );
+  }
+
+  const provider = await checkProviderConfiguration(fromEmail);
+  return json({ ok: true, env, resolved, provider }, 200);
+}
+
 export async function POST(request: Request): Promise<Response> {
   // Rate limit before doing any work.
   const ip = getClientIp(request);
@@ -68,11 +131,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Resolve recipient/sender from server configuration only.
-  const toEmail = process.env.CONTACT_TO_EMAIL || DEFAULT_CONTACT_TO_EMAIL;
-  const fromEmail = process.env.CONTACT_FROM_EMAIL || DEFAULT_CONTACT_FROM_EMAIL;
-  // Visitor acknowledgment is on by default; set CONTACT_SEND_CONFIRMATION=false
-  // to disable it.
-  const sendConfirmation = process.env.CONTACT_SEND_CONFIRMATION !== 'false';
+  const { toEmail, fromEmail, sendConfirmation } = readContactConfig();
 
   const result = await handleContactSubmission(body, {
     sendEmail: sendEmailViaResend,
