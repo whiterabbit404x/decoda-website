@@ -28,8 +28,11 @@ export function SiteHeader() {
         </nav>
 
         <div className={styles.actions}>
-          <Link href="/contact" className={`button-primary ${styles.demoButtonHeader}`}>
-            Request a demo
+          <a href="/sign-in" className={styles.signIn}>
+            Sign in
+          </a>
+          <Link href="/request-pilot" className={`button-primary ${styles.demoButtonHeader}`}>
+            Request pilot
             <IconArrowRight size={16} />
           </Link>
 
@@ -47,8 +50,11 @@ export function SiteHeader() {
                   {item.label}
                 </Link>
               ))}
-              <Link href="/contact" className={`button-primary ${styles.menuCta}`}>
-                Request a demo
+              <a href="/sign-in" className={styles.navLink}>
+                Sign in
+              </a>
+              <Link href="/request-pilot" className={`button-primary ${styles.menuCta}`}>
+                Request pilot
                 <IconArrowRight size={16} />
               </Link>
             </nav>
