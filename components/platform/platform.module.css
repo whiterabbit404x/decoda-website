@@ -1,0 +1,348 @@
+/* Decoda platform surfaces on www (launcher, account, admin console,
+   Request Pilot confirmation). Built on the site's light workspace tokens from
+   app/globals.css so they read as part of the corporate site. */
+
+.page {
+  display: grid;
+  gap: 28px;
+  padding-block: 48px 72px;
+}
+
+.pageHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageHeader h1 {
+  margin: 6px 0 0;
+  font-size: clamp(1.7rem, 2.6vw, 2.2rem);
+  letter-spacing: -0.02em;
+}
+
+.pageHeader p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  max-width: 62ch;
+  line-height: 1.6;
+}
+
+.headerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow-sm);
+  padding: 24px;
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.panel > p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.productCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow-sm);
+  padding: 22px;
+  min-height: 220px;
+}
+
+.productCard[data-state='open'],
+.productCard[data-state='pilot'] {
+  border-color: var(--border-strong);
+}
+
+.productCard h3 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.productCard p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 0.95rem;
+}
+
+.productCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.productCardAction {
+  margin-top: auto;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--border-strong);
+  color: var(--muted-strong);
+  background: var(--panel-2);
+  white-space: nowrap;
+}
+
+.badge[data-tone='open'] {
+  color: #14532d;
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.badge[data-tone='pilot'] {
+  color: #1e3a8a;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.badge[data-tone='warn'] {
+  color: #7c2d12;
+  border-color: #fdba74;
+  background: #fff7ed;
+}
+
+.badge[data-tone='danger'] {
+  color: #7f1d1d;
+  border-color: #fca5a5;
+  background: #fef2f2;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.disabledAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 1px solid var(--btn-secondary-border);
+  background: var(--btn-secondary-bg);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.linkButton:hover {
+  border-color: var(--accent);
+}
+
+.linkButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.orgList {
+  display: grid;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.orgItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--panel-solid);
+}
+
+.orgItem strong {
+  display: block;
+}
+
+.definitionList {
+  display: grid;
+  grid-template-columns: minmax(140px, 220px) 1fr;
+  gap: 12px 20px;
+  margin: 16px 0 0;
+}
+
+.definitionList dt {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.definitionList dd {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.93rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.table th {
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.formGrid {
+  display: grid;
+  gap: 14px;
+}
+
+.formGrid label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted-strong);
+  font-weight: 500;
+}
+
+.formGrid input,
+.formGrid select,
+.formGrid textarea {
+  width: 100%;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text);
+  padding: 11px 13px;
+  font: inherit;
+}
+
+.checkboxRow {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+}
+
+.checkboxRow input {
+  width: auto;
+}
+
+.inlineActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.notice {
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-strong);
+  background: var(--panel-2);
+  color: var(--muted-strong);
+  line-height: 1.6;
+}
+
+.noticeDanger {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+.twoColumn {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.adminNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.adminNav a {
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--muted-strong);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.adminNav a[aria-current='page'] {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+@media (max-width: 980px) {
+  .productGrid,
+  .twoColumn {
+    grid-template-columns: 1fr;
+  }
+
+  .definitionList {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .definitionList dd {
+    margin-bottom: 10px;
+  }
+}

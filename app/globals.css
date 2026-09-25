@@ -650,6 +650,47 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
   text-decoration: underline;
 }
 
+/* Request Pilot: product-interest checkboxes. */
+.pilot-products {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+}
+
+.pilot-products legend {
+  padding: 0 6px;
+  color: var(--muted-strong);
+  font-weight: 500;
+}
+
+.contact-form .pilot-product-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.contact-form .pilot-product-option input {
+  width: auto;
+  margin: 4px 0 0;
+  padding: 0;
+  accent-color: var(--accent);
+}
+
+.pilot-product-option > span {
+  display: grid;
+  gap: 2px;
+}
+
+.pilot-product-note {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 400;
+}
+
 /* Honeypot field: present in the DOM, hidden from people and assistive tech. */
 .contact-honeypot {
   position: absolute;

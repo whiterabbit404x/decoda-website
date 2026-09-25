@@ -8,6 +8,10 @@ Public-facing Next.js marketing website for Decoda, positioning the company as t
 - `/solutions/rwa-security`
 - `/platform`
 - `/contact`
+- `/request-pilot` — Request Pilot (Decoda is invite-only; this never creates an account)
+- `/sign-in` → shared Decoda sign-in (WorkOS AuthKit) → `/launcher`
+- `/launcher`, `/account` — product launcher and account/security (signed in)
+- `/admin/*` — platform admin console (explicit platform-admin grant required)
 
 ## Run locally
 
@@ -143,3 +147,44 @@ npm run build       # production build
 
 To exercise the real send path without a Resend account, point the SDK at a
 local stub with `RESEND_BASE_URL` and any non-empty `RESEND_API_KEY`.
+
+## Decoda platform (shared identity, Request Pilot, provisioning)
+
+This repository also owns the **Decoda platform data boundary**: one Decoda
+identity (WorkOS AuthKit) and one organization/entitlement model shared by RWA
+Guard, Vault and (later) Assets. The design, rollout and rollback plan is
+[`docs/identity/MIGRATION_PLAN.md`](docs/identity/MIGRATION_PLAN.md).
+
+| Piece | Where |
+| --- | --- |
+| Schema (`platform`) + product contract views (`platform_api.*_v1`) | `platform/migrations/` |
+| Migration runner (checksummed, advisory-locked) | `npm run platform:migrate [-- --check]` |
+| First platform admin (no hardcoded emails) | `npm run platform:grant-admin -- --workos-user-id user_… --operator "<you>" --reason "<why>"` |
+| WorkOS webhook | `POST /api/webhooks/workos` (`lib/platform/webhooks.ts`) |
+| Request Pilot API | `POST /api/pilot-requests` (`lib/platform/pilot-api.ts`) |
+| Admin API | `POST /api/admin/**` (gate: `lib/platform/admin-api.ts`) |
+
+Environment variables are documented in `.env.example`. Everything fails
+closed: with WorkOS or the platform database unconfigured, sign-in and the
+console answer "unavailable" and grant nothing.
+
+### Request Pilot API contract
+
+`POST /api/pilot-requests` (JSON; `X-Decoda-Form: request-pilot`; same-origin):
+
+| Status | Body | Meaning |
+| --- | --- | --- |
+| 200 | `{ "ok": true, "reference": "req_…" }` | Recorded as `pending` (identical answer for a duplicate). |
+| 400 | `{ "error": { "code": "PILOT_VALIDATION_FAILED" }, "fieldErrors": {…} }` | Validation failed. |
+| 400 | `{ "error": { "code": "PILOT_FORM_EXPIRED" } }` | Missing/forged/expired form token — refresh. |
+| 403 | `{ "error": { "code": "ORIGIN_REJECTED" } }` | Not posted by the website form. |
+| 429 | `{ "error": { "code": "PILOT_RATE_LIMITED" } }` | Per-IP or per-email limit. |
+| 503 | `{ "error": { "code": "PLATFORM_NOT_CONFIGURED" } }` | Platform not configured. |
+
+### Tests
+
+Database-backed suites create a fresh, migrated database per test file on the
+server in `PLATFORM_TEST_DATABASE_URL` (default
+`postgresql://decoda:decoda@127.0.0.1:5432/decoda_platform_test`). They skip
+when no server is reachable unless `PLATFORM_TEST_REQUIRE_DB=1` (set in CI),
+which turns a missing database into a failure.

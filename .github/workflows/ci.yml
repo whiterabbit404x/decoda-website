@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  website:
+    name: Typecheck, platform tests (real Postgres), build
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: decoda
+          POSTGRES_PASSWORD: decoda
+          POSTGRES_DB: decoda_platform_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U decoda" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PLATFORM_TEST_DATABASE_URL: postgresql://decoda:decoda@127.0.0.1:5432/decoda_platform_test
+      # A missing database must fail CI, never skip.
+      PLATFORM_TEST_REQUIRE_DB: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Create the read-only product role used by the contract tests
+        run: PGPASSWORD=decoda psql -h 127.0.0.1 -U decoda -d decoda_platform_test -c "CREATE ROLE decoda_platform_reader LOGIN PASSWORD 'reader'"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Migrations apply cleanly and report no drift
+        env:
+          DECODA_PLATFORM_DATABASE_URL: postgresql://decoda:decoda@127.0.0.1:5432/decoda_platform_test
+        run: npm run platform:migrate && npm run platform:migrate -- --check
+      - run: npm run build
