@@ -273,22 +273,58 @@ Production cutover checklist: §11.
 
 ## 9. Existing RWA Guard users
 1. `python -m services.api.scripts.identity_migration_export --out manifest.json`
-   (read-only, Guard DB). Classifies each user: `matched` (already linked to a
-   WorkOS user), `needs_invitation` (active, verified email, ≥1 org membership),
-   `conflict` (case-insensitive duplicate email, unverified email with
-   memberships, member of orgs that map ambiguously), `skipped` (suspended,
-   internal staff, no membership, synthetic/test domains). No password data is
-   exported.
+   (read-only transaction on the Guard DB). Classifies each account:
+   `matched` (already linked to a WorkOS user), `needs_invitation` (active,
+   verified email, member of ≥1 active organization), `conflict`
+   (case-insensitive duplicate, unverified or malformed email), `skipped`
+   (suspended, no organization, every organization inactive, reserved test
+   domain). Each account carries its primary organization (strongest role).
+   Decoda internal staff are **annotated** (`internal_admin: true`), not
+   skipped: they need a linked Decoda identity to keep using the staff
+   console after cutover. No password, MFA secret, token or recovery code is
+   exported. The command prints the manifest's SHA-256.
 2. `npm run platform:import-legacy -- --product rwa_guard --manifest manifest.json`
-   (dry-run by default) reconciles against the platform DB and WorkOS and
-   prints the same four buckets; `--apply` creates platform orgs (linked to the
-   Guard org id), WorkOS orgs, `rwa_guard: enabled` entitlements, WorkOS
-   invitations and `legacy_identity_links` rows. Conflicts are never applied.
-3. When a legacy user accepts and signs into Guard, the exchange links the
-   Guard user row to the WorkOS user **only** through a `linked`
-   `legacy_identity_links` row (bound by the webhook when that invitation was
-   accepted), preserving org memberships, workspace roles and MFA history.
-   No password or email matching happens at sign-in.
+   is a dry run by default: it reads the platform DB only (no WorkOS calls) and
+   prints the plan per organization and per account.
+   `--apply --admin-workos-user-id user_… --operator "<you>" --reason "<why>"`
+   runs as that platform admin, who must hold the
+   `organizations.manage`, `entitlements.manage` and `invitations.manage`
+   permissions. For each imported organization it creates:
+   - a platform organization;
+   - an `rwa_guard` entitlement: `pilot` for Guard Pilot tenants, otherwise
+     `enabled`. It has no expiry, because Guard's own plan still governs
+     limits and its evaluation window;
+   - a reviewed `platform.legacy_organization_links` row (migration 0002,
+     exposed as `platform_api.legacy_organization_links_v1`);
+   - a WorkOS organization.
+
+   For each account it creates a `legacy_identity_links` row and a WorkOS
+   invitation into the primary organization. The manifest's SHA-256 is
+   recorded on every link.
+
+   Anything ambiguous on the platform side is a conflict and is never applied:
+   - an existing member with the same address;
+   - an open invitation;
+   - a WorkOS identity already linked to another legacy account;
+   - a tenant that Guard reports as linked but the platform has no record of.
+
+   Re-running `--apply` is idempotent:
+   - it finishes organizations whose WorkOS step failed;
+   - it retries failed invitations;
+   - once a primary link is `linked`, it invites the person into their
+     further organizations.
+3. The webhook for the accepted invitation binds the `legacy_identity_links`
+   row to the WorkOS identity that accepted it.
+4. On the first Decoda sign-in into the organization, Guard links its
+   existing tenant to the platform organization, but only through the
+   reviewed organization link. A missing or disagreeing link is 409
+   `ORGANIZATION_LINK_CONFLICT`, never a twin tenant.
+5. Guard then links the account through the bound identity link. That:
+   - revokes the account's password sessions (the session version is bumped);
+   - keeps its organization memberships, workspace roles and MFA history.
+
+   After linking, password sign-in for that account answers 410
+   `DECODA_ACCOUNT_LINKED`. No password or email matching happens at sign-in.
 
 ---
 
