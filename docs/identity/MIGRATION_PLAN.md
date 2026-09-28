@@ -332,16 +332,19 @@ Production cutover checklist: §11.
 
 | Where | Variable | Notes |
 |---|---|---|
-| www | `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI` | Website application. Cookie password ≥ 32 chars, unique per app. |
+| www | `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI` | Website application. Cookie password ≥ 32 chars, unique per app. The redirect URI must equal the one registered in WorkOS. `WORKOS_COOKIE_DOMAIN` stays unset. |
 | www | `WORKOS_WEBHOOK_SECRET` | Webhook endpoint secret. |
 | www | `DECODA_PLATFORM_DATABASE_URL` | Owner (read-write) role. |
 | www | `DECODA_PLATFORM_SECRET` | HMAC key for CSRF/form tokens and IP hashing (≥ 32 chars). |
-| www | `DECODA_RWA_GUARD_URL`, `DECODA_VAULT_URL`, `DECODA_ASSETS_URL`, `DECODA_WEBSITE_URL` | Product destinations. |
-| www | `PILOT_NOTIFICATION_EMAIL`, `PILOT_FROM_EMAIL` (+ existing `RESEND_API_KEY`) | Request Pilot emails. |
-| Vault API | `VAULT_IDENTITY_MODE=workos`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_ISSUER`, `DECODA_PLATFORM_DATABASE_URL` (reader), `DECODA_IDP_MFA_REQUIRED`, `DECODA_ACCESS_CACHE_TTL_SECONDS` | Removes production use of `VAULT_ALLOW_DEMO_SEED` / `VAULT_DEMO_PASSWORD`. |
-| Vault web | `VAULT_IDENTITY_MODE=workos`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI`, `DECODA_WEBSITE_URL`, `DECODA_RWA_GUARD_URL`, `DECODA_ASSETS_URL` | |
-| Guard API | `GUARD_IDENTITY_MODE`, `GUARD_LEGACY_PASSWORD_SUNSET`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_ISSUER`, `DECODA_PLATFORM_DATABASE_URL` (reader), `DECODA_IDP_MFA_REQUIRED` | |
-| Guard web | `GUARD_IDENTITY_MODE`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI`, `DECODA_WEBSITE_URL`, `DECODA_VAULT_URL`, `DECODA_ASSETS_URL` | |
+| www | `DECODA_WEBSITE_URL` | The website's public origin. Sign-out returns to `${DECODA_WEBSITE_URL}/`, which must be the Website application's sign-out redirect. |
+| www | `DECODA_RWA_GUARD_URL`, `DECODA_VAULT_URL`, `DECODA_ASSETS_URL` | Launcher destinations. Defaults are the production domains. |
+| www | `PILOT_NOTIFICATION_EMAIL`, `PILOT_FROM_EMAIL`, `PILOT_SEND_CONFIRMATION` (+ existing `RESEND_API_KEY`) | Request Pilot emails. |
+| www | Optional: `DECODA_INVITATION_EXPIRES_DAYS` (1–30, default 7), `DECODA_PLATFORM_DB_POOL_MAX` (default 5), `DECODA_ENV=production` (only off Vercel) | |
+| operator CLI | `DECODA_PLATFORM_READER_ROLE` (default `decoda_platform_reader`) | Role `platform:migrate` grants the `platform_api` views to. |
+| Vault API | `VAULT_IDENTITY_MODE=workos`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_ISSUER`, `DECODA_PLATFORM_DATABASE_URL` (reader), `DECODA_IDP_MFA_REQUIRED=true`, `VAULT_BFF_SHARED_SECRET`. Optional: `DECODA_ACCESS_CACHE_TTL_SECONDS`, `DECODA_ALLOW_IMPERSONATION` (keep off) | `VAULT_ENV=staging\|production` refuses to start without them, and refuses `VAULT_ALLOW_DEMO_SEED`. |
+| Vault web | `VAULT_IDENTITY_MODE=workos`, `VAULT_DEPLOYMENT_ENV` (`staging`/`production` when not a Vercel production deployment), `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI` (build time), `VAULT_API_URL`, `VAULT_BFF_SHARED_SECRET`, `DECODA_WEBSITE_URL`, `VAULT_RWA_GUARD_APP_URL` | |
+| Guard API | `GUARD_IDENTITY_MODE`, `GUARD_LEGACY_PASSWORD_SUNSET`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_ISSUER`, `DECODA_PLATFORM_DATABASE_URL` (reader), `DECODA_IDP_MFA_REQUIRED=true`, `GUARD_BFF_SHARED_SECRET` (≥ 32 chars), `DECODA_WEBSITE_URL`. Optional: `DECODA_ACCESS_CACHE_TTL_SECONDS` | With `APP_ENV=staging\|production`, `dual`/`workos` refuse to start without the issuer, the BFF secret, the MFA attestation and (in `dual`) the sunset date. |
+| Guard web | `GUARD_IDENTITY_MODE`, `GUARD_LEGACY_PASSWORD_SUNSET`, `WORKOS_CLIENT_ID`, `WORKOS_API_KEY`, `WORKOS_COOKIE_PASSWORD`, `NEXT_PUBLIC_WORKOS_REDIRECT_URI` (build time), `GUARD_BFF_SHARED_SECRET`, `DECODA_WEBSITE_URL`, `DECODA_VAULT_URL` (+ existing `API_URL`) | |
 
 Exact lists with comments are in each repository's `.env.example`.
 
@@ -361,7 +364,17 @@ Applications (per environment):
 Environment settings: sign-up **disabled / invite-only**; MFA **required**;
 organization domain JIT provisioning **off**; webhook endpoint
 `https://www.decodasecurity.com/api/webhooks/workos` subscribed to the events
-in §5.6; roles `admin` and `member` exist.
+in §5.6; roles `admin` and `member` exist. Only password, passkey and SSO
+sign-ins count as MFA-assured in the products, so Magic Auth and social OAuth
+stay off.
+
+Platform database: create `decoda_platform_reader` with SQL (`CREATE ROLE …
+LOGIN`), not in the Neon console. Console-created roles join `neon_superuser`,
+which includes `pg_read_all_data`. The migrations do not create the role;
+`platform:migrate` grants it the `platform_api` views (and revokes the
+`platform` schema) after every run, if the role exists. Run `platform:migrate`
+over the direct (non-pooled) connection: the runner holds a session advisory
+lock.
 
 Before production cutover verify: production WorkOS environment (not
 staging); redirect/sign-out/initiate URIs exact (no localhost, https only);
