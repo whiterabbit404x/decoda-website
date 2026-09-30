@@ -7,16 +7,15 @@
  * clears the new session and `onError` shows a controlled error page.
  */
 import { handleAuth } from '@workos-inc/authkit-nextjs';
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { withTransaction } from '@/lib/platform/db';
-import { logCallbackDiagnostic } from '@/lib/platform/pkce-diagnostics';
 import { newRequestId } from '@/lib/platform/request-context';
 import { recordWebsiteSignIn } from '@/lib/platform/sign-in';
 import { getWorkOSGateway, type WorkOSUser } from '@/lib/platform/workos';
 
 export const dynamic = 'force-dynamic';
 
-const handleCallback = handleAuth({
+export const GET = handleAuth({
   returnPathname: '/launcher?welcome=1',
   onSuccess: async ({ user, organizationId, authenticationMethod, impersonator }) => {
     const gateway = getWorkOSGateway();
@@ -43,9 +42,3 @@ const handleCallback = handleAuth({
     return NextResponse.redirect(new URL(`/auth/error?reason=${reason}&ref=${requestId}`, request.url), 303);
   },
 });
-
-export async function GET(request: NextRequest): Promise<Response> {
-  // TEMPORARY (staging missing_pkce_cookie investigation): hosts, names and booleans only.
-  logCallbackDiagnostic(request);
-  return handleCallback(request);
-}
