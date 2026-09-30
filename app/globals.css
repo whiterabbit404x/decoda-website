@@ -250,6 +250,21 @@ svg {
   outline-color: #93c5fd;
 }
 
+/* The header's account action ("Sign in" or the signed-in person's name) is
+   decided after load (components/company/account-action.tsx). With JavaScript
+   it stays hidden until then, so a signed-in visitor never sees "Sign in"; if
+   the answer is slow it shows anyway. Without JavaScript it is always "Sign in". */
+html[data-js='1'] [data-account-pending] {
+  visibility: hidden;
+  animation: account-action-fallback 0s linear 2.5s forwards;
+}
+
+@keyframes account-action-fallback {
+  to {
+    visibility: visible;
+  }
+}
+
 /* ========================= Scroll reveal system ==========================
    The hidden start state is gated on html[data-js='1'] (set by a tiny inline
    script in the root layout). With JavaScript unavailable the attribute is

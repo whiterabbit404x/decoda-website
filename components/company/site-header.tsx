@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { AccountAction } from './account-action';
 import { DecodaLogo } from './logo';
 import { IconArrowRight } from './icons';
 import styles from './site-chrome.module.css';
@@ -28,9 +29,7 @@ export function SiteHeader() {
         </nav>
 
         <div className={styles.actions}>
-          <a href="/sign-in" className={styles.signIn}>
-            Sign in
-          </a>
+          <AccountAction className={styles.signIn} />
           <Link href="/request-pilot" className={`button-primary ${styles.demoButtonHeader}`}>
             Request pilot
             <IconArrowRight size={16} />
@@ -50,9 +49,7 @@ export function SiteHeader() {
                   {item.label}
                 </Link>
               ))}
-              <a href="/sign-in" className={styles.navLink}>
-                Sign in
-              </a>
+              <AccountAction className={styles.navLink} />
               <Link href="/request-pilot" className={`button-primary ${styles.menuCta}`}>
                 Request pilot
                 <IconArrowRight size={16} />
