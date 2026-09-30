@@ -100,6 +100,21 @@ export function launcherStateOpensProduct(state: LauncherState): boolean {
   return state === 'open' || state === 'pilot';
 }
 
+/**
+ * Where "Open <product>" goes: the product's own sign-in entry, which is also
+ * its Initiate login URI in WorkOS. It starts the product's AuthKit flow; with
+ * a Decoda session already in the browser that flow completes without asking
+ * again, and the person lands inside the product. The bare product URL is not
+ * the app (RWA Guard's root is its marketing page).
+ *
+ * The product sets its PKCE cookie on the host it is opened on, and WorkOS
+ * returns to the host of its redirect URI, so `productUrl` must be exactly the
+ * product's public origin (the one in its NEXT_PUBLIC_WORKOS_REDIRECT_URI).
+ */
+export function productEntryUrl(productUrl: string): string {
+  return `${productUrl.replace(/\/+$/, '')}/auth/sign-in`;
+}
+
 /** Customer-facing explanation for a denial (never exposes internal ids). */
 export function accessDenialMessage(state: AccessState, productLabel: string): string {
   switch (state) {

@@ -143,7 +143,9 @@ describe('platform identity (database)', () => {
       const view = await loadLauncher(client, snapshot(user.id, org.id), URLS);
       const states = Object.fromEntries(view.products.map((p) => [p.product, p.state]));
       assert.deepEqual(states, { rwa_guard: 'open', vault: 'pilot', assets: 'coming_soon' });
-      assert.equal(view.products.find((p) => p.product === 'vault')!.url, URLS.vault);
+      // Each open product is entered through its own sign-in (SSO), on the configured origin.
+      assert.equal(view.products.find((p) => p.product === 'rwa_guard')!.url, `${URLS.rwa_guard}/auth/sign-in`);
+      assert.equal(view.products.find((p) => p.product === 'vault')!.url, `${URLS.vault}/auth/sign-in`);
       assert.equal(view.products.find((p) => p.product === 'assets')!.url, null);
       assert.equal(soleOpenProduct(view), null);
     } finally {
@@ -158,6 +160,7 @@ describe('platform identity (database)', () => {
     try {
       const view = await loadLauncher(client, snapshot(user.id, org.id), URLS);
       assert.equal(soleOpenProduct(view)?.product, 'vault');
+      assert.equal(soleOpenProduct(view)?.url, `${URLS.vault}/auth/sign-in`);
       const guard = view.products.find((p) => p.product === 'rwa_guard')!;
       assert.equal(guard.state, 'not_enabled');
       assert.equal(guard.url, null);

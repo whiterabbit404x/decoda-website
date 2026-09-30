@@ -206,6 +206,10 @@ grants membership by email match).
 ### 5.4 Product sign-in (Guard / Vault)
 `/sign-in` ("Sign in to Decoda") → AuthKit → `/auth/callback` → exchange with
 the product API → product session cookies (HttpOnly) → `/dashboard`.
+From the www launcher, "Open <product>" enters at the product's
+`/auth/sign-in` (its Initiate login URI). AuthKit recognises the Decoda
+session and returns without a new sign-in (SSO), and the person lands in the
+product.
 Denials render a professional screen: *Product not enabled for your
 organization*, *No organization access*, *Access pending*, *Organization
 suspended*.
@@ -337,7 +341,7 @@ Production cutover checklist: §11.
 | www | `DECODA_PLATFORM_DATABASE_URL` | Owner (read-write) role. |
 | www | `DECODA_PLATFORM_SECRET` | HMAC key for CSRF/form tokens and IP hashing (≥ 32 chars). |
 | www | `DECODA_WEBSITE_URL` | The website's public origin. Sign-out returns to `${DECODA_WEBSITE_URL}/`, which must be the Website application's sign-out redirect. |
-| www | `DECODA_RWA_GUARD_URL`, `DECODA_VAULT_URL`, `DECODA_ASSETS_URL` | Launcher destinations. Defaults are the production domains. |
+| www | `DECODA_RWA_GUARD_URL`, `DECODA_VAULT_URL`, `DECODA_ASSETS_URL` | Launcher destinations. Defaults are the production domains. "Open <product>" goes to `<url>/auth/sign-in`, the product's Initiate login URI, so each value must be exactly the product's public origin: the host of its `NEXT_PUBLIC_WORKOS_REDIRECT_URI`. AuthKit's PKCE cookie is host-only, and any other host fails with `missing_pkce_cookie`. |
 | www | `PILOT_NOTIFICATION_EMAIL`, `PILOT_FROM_EMAIL`, `PILOT_SEND_CONFIRMATION` (+ existing `RESEND_API_KEY`) | Request Pilot emails. |
 | www | Optional: `DECODA_INVITATION_EXPIRES_DAYS` (1–30, default 7), `DECODA_PLATFORM_DB_POOL_MAX` (default 5), `DECODA_ENV=production` (only off Vercel) | |
 | operator CLI | `DECODA_PLATFORM_READER_ROLE` (default `decoda_platform_reader`) | Role `platform:migrate` grants the `platform_api` views to. |
