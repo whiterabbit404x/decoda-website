@@ -6,10 +6,12 @@
  * There is no sign-up counterpart: Decoda is invite-only.
  */
 import { getSignInUrl } from '@workos-inc/authkit-nextjs';
+import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { NextRequest } from 'next/server';
 import { requireIdentityConfig } from '@/lib/platform/config';
 import { PlatformConfigError } from '@/lib/platform/errors';
+import { logSignInDiagnostic } from '@/lib/platform/pkce-diagnostics';
 import { safeReturnPath } from '@/lib/platform/return-to';
 
 export const dynamic = 'force-dynamic';
@@ -26,5 +28,7 @@ export async function GET(request: NextRequest) {
   }
   const returnTo = safeReturnPath(request.nextUrl.searchParams.get('returnTo'));
   const signInUrl = await getSignInUrl({ returnTo });
+  // TEMPORARY (staging missing_pkce_cookie investigation): hosts, names and booleans only.
+  logSignInDiagnostic(request, signInUrl, await cookies());
   redirect(signInUrl);
 }

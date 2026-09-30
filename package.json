@@ -8,6 +8,7 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"lib/**/*.test.ts\" \"app/**/**/*.test.ts\"",
+    "test:http": "node --import tsx --test \"tests/http/*.test.ts\"",
     "platform:migrate": "tsx scripts/platform/migrate.ts",
     "platform:grant-admin": "tsx scripts/platform/grant-admin.ts",
     "platform:import-legacy": "tsx scripts/platform/import-legacy.ts"

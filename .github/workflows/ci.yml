@@ -46,4 +46,10 @@ jobs:
         env:
           DECODA_PLATFORM_DATABASE_URL: postgresql://decoda:decoda@127.0.0.1:5432/decoda_platform_test
         run: npm run platform:migrate && npm run platform:migrate -- --check
-      - run: npm run build
+      - name: Build
+        env:
+          # Test-only value, inlined at build time, for the AuthKit cookie test below.
+          NEXT_PUBLIC_WORKOS_REDIRECT_URI: https://localhost:3123/auth/callback
+        run: npm run build
+      - name: AuthKit PKCE cookie round trip (next start, stand-in WorkOS API)
+        run: npm run test:http
