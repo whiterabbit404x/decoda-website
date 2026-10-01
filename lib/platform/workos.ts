@@ -98,8 +98,25 @@ export const WEBHOOK_TOLERANCE_MS = 180_000;
 
 let cached: { apiKey: string; gateway: WorkOSGateway } | null = null;
 
+/**
+ * Client options, read the way AuthKit reads them (`@workos-inc/authkit-nextjs`
+ * dist/esm/workos.js), so the platform and AuthKit always talk to the same
+ * WorkOS API. Deployments leave WORKOS_API_HOSTNAME / _PORT / _HTTPS unset
+ * (api.workos.com over https); tests point them at a local stand-in.
+ */
+export function workosClientOptions(clientId: string, env: Record<string, string | undefined> = process.env) {
+  const hostname = env.WORKOS_API_HOSTNAME?.trim();
+  const port = env.WORKOS_API_PORT?.trim();
+  return {
+    clientId,
+    ...(hostname ? { apiHostname: hostname } : {}),
+    https: env.WORKOS_API_HTTPS ? env.WORKOS_API_HTTPS === 'true' : true,
+    ...(port ? { port: Number.parseInt(port, 10) } : {}),
+  };
+}
+
 export function createWorkOSGateway(options: { apiKey: string; clientId: string; webhookSecret?: () => string }): WorkOSGateway {
-  const workos = new WorkOS(options.apiKey, { clientId: options.clientId });
+  const workos = new WorkOS(options.apiKey, workosClientOptions(options.clientId));
   const webhookSecret = options.webhookSecret ?? requireWebhookSecret;
   return {
     async createOrganization({ name, externalId, idempotencyKey }) {
