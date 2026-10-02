@@ -250,10 +250,12 @@ svg {
   outline-color: #93c5fd;
 }
 
-/* The header's account action ("Sign in" or the signed-in person's name) is
-   decided after load (components/company/account-action.tsx). With JavaScript
-   it stays hidden until then, so a signed-in visitor never sees "Sign in"; if
-   the answer is slow it shows anyway. Without JavaScript it is always "Sign in". */
+/* The header's account actions ("Sign in" / "Request pilot", or the signed-in
+   person's name / "Open launcher") are decided after load
+   (components/company/account-action.tsx). With JavaScript they stay hidden
+   until then, so a signed-in visitor never sees "Sign in" or "Request pilot"; if
+   the answer is slow they show anyway. Without JavaScript they are always the
+   signed-out links. */
 html[data-js='1'] [data-account-pending] {
   visibility: hidden;
   animation: account-action-fallback 0s linear 2.5s forwards;
