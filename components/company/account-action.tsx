@@ -1,17 +1,15 @@
 'use client';
 
 /**
- * The header's account action: "Sign in", or — for a signed-in visitor — their
- * name, linking to their Decoda account.
+ * Header identity actions.
  *
- * Pages stay static (the header never reads the session on the server), so the
- * state is asked of /api/session once per page load. Until it answers, the
- * action keeps its place but is hidden (globals.css, `data-account-pending`),
- * so a signed-in visitor never sees "Sign in". Without JavaScript it is a plain
- * "Sign in" link, as before.
+ * Marketing pages stay static, so the browser asks /api/session once per page
+ * load. Signed-out visitors see "Sign in" + "Request pilot". Signed-in visitors
+ * see their Decoda account + a direct Launcher shortcut, and never get the
+ * acquisition CTA as their primary action.
  */
 import { useEffect, useState } from 'react';
-import { IconUser } from './icons';
+import { IconArrowRight, IconUser } from './icons';
 
 type AccountState = { status: 'pending' } | { status: 'signed-out' } | { status: 'signed-in'; label: string; name: string };
 
@@ -49,7 +47,15 @@ function sessionState(): Promise<AccountState> {
   return probe;
 }
 
-export function AccountAction({ className }: { className: string }) {
+export function AccountAction({
+  className,
+  launcherClassName,
+  requestClassName,
+}: {
+  className: string;
+  launcherClassName: string;
+  requestClassName: string;
+}) {
   const [state, setState] = useState<AccountState>({ status: 'pending' });
 
   useEffect(() => {
@@ -59,7 +65,6 @@ export function AccountAction({ className }: { className: string }) {
         if (active) setState(next);
       });
     load();
-    // A page restored from the back/forward cache may predate a sign-in or sign-out.
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
       probe = null;
@@ -74,15 +79,29 @@ export function AccountAction({ className }: { className: string }) {
 
   if (state.status === 'signed-in') {
     return (
-      <a href="/account" className={className} aria-label={`Account (${state.name})`} title={state.name}>
-        <IconUser size={18} />
-        {state.label}
-      </a>
+      <>
+        <a href="/account" className={className} aria-label={`Account (${state.name})`} title={state.name}>
+          <IconUser size={18} />
+          {state.label}
+        </a>
+        <a href="/launcher" className={launcherClassName}>
+          Launcher
+        </a>
+      </>
     );
   }
+
   return (
-    <a href="/sign-in" className={className} data-account-pending={state.status === 'pending' ? '' : undefined}>
-      Sign in
-    </a>
+    <>
+      <a href="/sign-in" className={className} data-account-pending={state.status === 'pending' ? '' : undefined}>
+        Sign in
+      </a>
+      {state.status === 'signed-out' ? (
+        <a href="/request-pilot" className={requestClassName}>
+          Request pilot
+          <IconArrowRight size={16} />
+        </a>
+      ) : null}
+    </>
   );
 }
