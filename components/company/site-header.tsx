@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { AccountAction } from './account-action';
+import { AccountAction, PrimaryAction } from './account-action';
 import { DecodaLogo } from './logo';
-import { IconArrowRight } from './icons';
 import styles from './site-chrome.module.css';
 
 const navItems = [
@@ -30,10 +29,7 @@ export function SiteHeader() {
 
         <div className={styles.actions}>
           <AccountAction className={styles.signIn} />
-          <Link href="/request-pilot" className={`button-primary ${styles.demoButtonHeader}`}>
-            Request pilot
-            <IconArrowRight size={16} />
-          </Link>
+          <PrimaryAction className={`button-primary ${styles.demoButtonHeader}`} />
 
           {/* Disclosure-based mobile menu: native expanded/collapsed semantics
               and keyboard support, with no client JavaScript. */}
@@ -50,10 +46,7 @@ export function SiteHeader() {
                 </Link>
               ))}
               <AccountAction className={styles.navLink} />
-              <Link href="/request-pilot" className={`button-primary ${styles.menuCta}`}>
-                Request pilot
-                <IconArrowRight size={16} />
-              </Link>
+              <PrimaryAction className={`button-primary ${styles.menuCta}`} />
             </nav>
           </details>
         </div>

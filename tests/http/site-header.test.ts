@@ -69,13 +69,43 @@ test('a malformed session cookie is "signed out"', async () => {
   app.takeExchanges();
 });
 
-test('pages stay static: the header is rendered without reading the session, as a pending "Sign in"', async () => {
+/** The header's links (desktop, then the mobile menu): href, text, and whether they wait for the session check. */
+function headerLinks(html: string): Array<{ href: string; text: string; pending: boolean }> {
+  const header = /<header\b[\s\S]*?<\/header>/.exec(html)?.[0] ?? '';
+  return [...header.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)]
+    .map(([, attributes, inner]) => ({
+      href: /\bhref="([^"]*)"/.exec(attributes)?.[1] ?? '',
+      text: inner.replace(/<[^>]+>/g, '').trim(),
+      pending: /\bdata-account-pending=""/.test(attributes),
+    }))
+    .filter((link) => link.pending || ['/sign-in', '/request-pilot', '/account', '/launcher'].includes(link.href));
+}
+
+test('pages stay static: the header is rendered without reading the session, as pending "Sign in" and "Request pilot"', async () => {
   const sealed = await app.sealSession(TONY);
   for (const cookie of [undefined, `wos-session=${sealed}`]) {
     const page = await app.get('/', { cookie });
     assert.equal(page.status, 200);
     assert.match(page.body, /<a href="\/sign-in"[^>]*data-account-pending=""[^>]*>Sign in<\/a>/);
+    // Both slots, desktop and mobile menu, wait for /api/session; until then (and
+    // without JavaScript) they are the signed-out links.
+    const pendingSlot = (href: string, text: string) => ({ href, text, pending: true });
+    assert.deepEqual(headerLinks(page.body), [
+      pendingSlot('/sign-in', 'Sign in'),
+      pendingSlot('/request-pilot', 'Request pilot'),
+      pendingSlot('/sign-in', 'Sign in'),
+      pendingSlot('/request-pilot', 'Request pilot'),
+    ]);
     assert.ok(!page.body.includes('Tony'), 'no personal data in the static page');
+  }
+});
+
+test('there is no public registration: no Register action, no sign-up route', async () => {
+  const page = await app.get('/');
+  const header = /<header\b[\s\S]*?<\/header>/.exec(page.body)?.[0] ?? '';
+  assert.doesNotMatch(header, /register|sign[\s-]?up|create (an |your )?account/i);
+  for (const path of ['/register', '/sign-up', '/signup']) {
+    assert.equal((await app.get(path)).status, 404, path);
   }
 });
 

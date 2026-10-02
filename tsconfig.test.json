@@ -1,0 +1,6 @@
+// Unit tests only (`npm test`): tsx compiles .tsx with React's automatic JSX
+// runtime. tsconfig.json keeps "jsx": "preserve", which Next.js requires.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "jsx": "react-jsx" }
+}

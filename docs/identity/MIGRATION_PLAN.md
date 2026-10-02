@@ -204,7 +204,7 @@ membership (WorkOS binds the invitation to the address; the platform never
 grants membership by email match).
 
 ### 5.4 Product sign-in (Guard / Vault)
-`/sign-in` ("Sign in to Decoda") → AuthKit → `/auth/callback` → exchange with
+`/sign-in` ("Sign in with Decoda") → AuthKit → `/auth/callback` → exchange with
 the product API → product session cookies (HttpOnly) → `/dashboard`.
 From the www launcher, "Open <product>" enters at the product's
 `/auth/sign-in` (its Initiate login URI). AuthKit recognises the Decoda
@@ -226,6 +226,44 @@ reload. Sign-out: revoke product session → clear cookies → AuthKit logout UR
 `invitation.created|accepted|revoked|resent`, `session.revoked` are applied;
 `session.created` and `authentication.*` are recorded for audit; everything
 else is recorded as ignored.
+
+### 5.7 Account entry points (one Decoda account)
+The website is the only place a person deals with their Decoda account:
+
+| Entry | Route | For |
+|---|---|---|
+| Sign in | www `/sign-in` → AuthKit → `/launcher` | anyone with a Decoda account |
+| Request pilot | www `/request-pilot[?product=…]` | anyone without access; never creates an account (§5.1) |
+| Launcher | www `/launcher` | signed in; products come from the active organization's entitlements (D8) |
+| Account & organization | www `/account` | signed in |
+
+The site header follows the session (`components/company/account-action.tsx`):
+signed out it offers **Sign in** and **Request pilot**; signed in it offers the
+person's account and **Open launcher** (a product the organization lacks is
+requested from its launcher card). There is no Register action.
+
+Products never create Decoda accounts. With the shared identity on (Guard
+`dual`/`workos`, Vault `workos`) their sign-in page offers **Sign in with
+Decoda** ("Use your Decoda account to access …") and **Request access**, a link
+to www `/request-pilot?product=<product>` (`DECODA_WEBSITE_URL`). Guard's own
+`/sign-up` and `/request-pilot` redirect there and its API answers
+`410 SIGN_UP_MOVED` / `PILOT_REQUESTS_MOVED`; Vault has no sign-up at all. A
+product creates only its local user/membership rows, at the sign-in exchange,
+for a Decoda identity whose organization is entitled (D4, D9) — never a
+password. Legacy modes keep each product's own sign-in until its cutover.
+
+**Central self-service sign-up — designed, not built.** If Decoda opens
+self-service sign-up, it is ONE route on www, `/register`, that starts AuthKit's
+hosted sign-up for the Website application (`getSignUpUrl`), behind an explicit
+deployment flag and with sign-up enabled in the WorkOS environment (§11 keeps it
+off until then). Nothing else changes:
+- a self-registered account has no membership, so the launcher shows *No
+  organization access* with Request pilot, and every product stays closed until
+  Decoda provisions the organization and its entitlements (§5.2, D8);
+- products keep linking new people to www `/request-pilot`, and www decides what
+  that page offers (for example, a link to `/register`). No product gains a
+  sign-up route, password or account store: a Decoda identity reaches a product
+  only through its sign-in exchange and the entitlement check.
 
 ---
 

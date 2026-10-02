@@ -184,6 +184,36 @@ describe('platform identity (database)', () => {
     }
   });
 
+  dbIt('launcher: products follow the organization entitlement — nothing until enabled, closed again when withdrawn', async () => {
+    const gateway = new FakeWorkOS();
+    const { user, org, platformOrgId } = await setupMember(gateway);
+    const entitle = (product: string, status: string) =>
+      db().pool.query(
+        `INSERT INTO platform.organization_product_entitlements (organization_id, product, status) VALUES ($1, $2, $3)
+         ON CONFLICT (organization_id, product) DO UPDATE SET status = EXCLUDED.status, updated_at = now()`,
+        [platformOrgId, product, status],
+      );
+    const client = await db().pool.connect();
+    const shown = async () =>
+      Object.fromEntries(
+        (await loadLauncher(client, snapshot(user.id, org.id), URLS)).products.map((p) => [p.product, p.url ? `${p.state} → ${p.url}` : p.state]),
+      );
+    try {
+      assert.deepEqual(await shown(), { rwa_guard: 'not_enabled', vault: 'not_enabled', assets: 'coming_soon' });
+      await entitle('rwa_guard', 'enabled');
+      assert.deepEqual(await shown(), { rwa_guard: `open → ${URLS.rwa_guard}/auth/sign-in`, vault: 'not_enabled', assets: 'coming_soon' });
+      await entitle('rwa_guard', 'suspended');
+      await entitle('vault', 'pilot');
+      assert.deepEqual(await shown(), { rwa_guard: 'suspended', vault: `pilot → ${URLS.vault}/auth/sign-in`, assets: 'coming_soon' });
+      // Withdrawn, and Assets stays closed while the catalog says "coming soon", whatever its entitlement.
+      await entitle('vault', 'disabled');
+      await entitle('assets', 'enabled');
+      assert.deepEqual(await shown(), { rwa_guard: 'suspended', vault: 'not_enabled', assets: 'coming_soon' });
+    } finally {
+      client.release();
+    }
+  });
+
   dbIt('organization switch: only active memberships can be selected (tampered id refused)', async () => {
     const gateway = new FakeWorkOS();
     const a = await setupMember(gateway);
