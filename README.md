@@ -160,6 +160,7 @@ Guard, Vault and (later) Assets. The design, rollout and rollback plan is
 | Schema (`platform`) + product contract views (`platform_api.*_v1`) | `platform/migrations/` |
 | Migration runner (checksummed, advisory-locked) | `npm run platform:migrate [-- --check]` |
 | First platform admin (no hardcoded emails) | `npm run platform:grant-admin -- --workos-user-id user_… --operator "<you>" --reason "<why>"` |
+| Import a product's reviewed legacy accounts (dry run by default; `--apply` as a platform admin) | `npm run platform:import-legacy -- --product rwa_guard --manifest manifest.json` |
 | WorkOS webhook | `POST /api/webhooks/workos` (`lib/platform/webhooks.ts`) |
 | Request Pilot API | `POST /api/pilot-requests` (`lib/platform/pilot-api.ts`) |
 | Admin API | `POST /api/admin/**` (gate: `lib/platform/admin-api.ts`) |
@@ -188,3 +189,12 @@ server in `PLATFORM_TEST_DATABASE_URL` (default
 `postgresql://decoda:decoda@127.0.0.1:5432/decoda_platform_test`). They skip
 when no server is reachable unless `PLATFORM_TEST_REQUIRE_DB=1` (set in CI),
 which turns a missing database into a failure.
+
+`npm run test:http` checks the AuthKit sign-in cookie round trip against a
+production build (`next start`) and a local stand-in for the WorkOS API. AuthKit
+inlines the redirect URI at build time, so build with the URI the test expects:
+
+```bash
+NEXT_PUBLIC_WORKOS_REDIRECT_URI=https://localhost:3123/auth/callback npm run build
+npm run test:http
+```

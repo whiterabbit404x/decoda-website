@@ -15,6 +15,7 @@ import {
   PRODUCT_DESCRIPTIONS,
   PRODUCT_LABELS,
   PRODUCTS,
+  productEntryUrl,
   type AccessState,
   type LauncherState,
   type ProductKey,
@@ -92,7 +93,7 @@ export async function loadLauncher(client: DbClient, auth: AuthSnapshot, urls: P
       description: PRODUCT_DESCRIPTIONS[product],
       state,
       accessState,
-      url: launcherStateOpensProduct(state) ? urls[product] : null,
+      url: launcherStateOpensProduct(state) ? productEntryUrl(urls[product]) : null,
       requestAccessUrl: state === 'not_enabled' && product !== 'assets' ? `/request-pilot?product=${product}` : null,
       expiresAt: row?.entitlement_expires_at ? row.entitlement_expires_at.toISOString() : null,
     };

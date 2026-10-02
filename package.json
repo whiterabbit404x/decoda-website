@@ -8,8 +8,10 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test \"lib/**/*.test.ts\" \"app/**/**/*.test.ts\"",
+    "test:http": "node --import tsx --test --test-concurrency=1 \"tests/http/*.test.ts\"",
     "platform:migrate": "tsx scripts/platform/migrate.ts",
-    "platform:grant-admin": "tsx scripts/platform/grant-admin.ts"
+    "platform:grant-admin": "tsx scripts/platform/grant-admin.ts",
+    "platform:import-legacy": "tsx scripts/platform/import-legacy.ts"
   },
   "dependencies": {
     "@workos-inc/authkit-nextjs": "4.3.2",
@@ -25,6 +27,7 @@
     "@types/pg": "8.15.6",
     "@types/react": "19.0.10",
     "@types/react-dom": "19.0.4",
+    "iron-session": "8.0.4",
     "tsx": "^4.23.12",
     "typescript": "5.8.2"
   }

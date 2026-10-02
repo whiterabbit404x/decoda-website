@@ -220,6 +220,8 @@ describe('platform migrations', () => {
     try {
       await reader.query('SELECT count(*) FROM platform_api.product_access_v1');
       await reader.query('SELECT count(*) FROM platform_api.session_revocations_v1');
+      await reader.query('SELECT count(*) FROM platform_api.legacy_organization_links_v1');
+      await assert.rejects(reader.query('SELECT count(*) FROM platform.legacy_organization_links'), /permission denied/);
       await assert.rejects(reader.query('SELECT count(*) FROM platform.users'), /permission denied/);
       await assert.rejects(
         reader.query("INSERT INTO platform.products (product, display_name, availability, sort_order) VALUES ('x','x','available',1)"),
