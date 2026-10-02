@@ -7,6 +7,7 @@
  */
 import { after, before, test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { assertNoSecretsInOutput, parseSetCookie, startApp, type App, type Reply, type TestUser } from './harness';
 
 const TONY: TestUser = { id: 'user_01HTTPTESTTONY', email: 'tony.pham@decoda.example', firstName: 'Tony', lastName: 'Pham' };
@@ -81,4 +82,13 @@ test('pages stay static: the header is rendered without reading the session, as 
 
 test('the server output never contains a key, a token or a session cookie', () => {
   assertNoSecretsInOutput(app);
+});
+
+
+test('header central-account UX keeps acquisition and authenticated actions separate', () => {
+  const source = readFileSync('components/company/account-action.tsx', 'utf8');
+  assert.match(source, /state\.status === 'signed-in'[\s\S]*href="\/account"[\s\S]*href="\/launcher"/);
+  assert.match(source, /state\.status === 'signed-out'[\s\S]*href="\/request-pilot"/);
+  assert.match(source, /href="\/sign-in"/);
+  assert.ok(!source.includes('/register'), 'website header must not expose public registration');
 });
