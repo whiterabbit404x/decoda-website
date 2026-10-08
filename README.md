@@ -152,7 +152,7 @@ local stub with `RESEND_BASE_URL` and any non-empty `RESEND_API_KEY`.
 
 This repository also owns the **Decoda platform data boundary**: one Decoda
 identity (WorkOS AuthKit) and one organization/entitlement model shared by RWA
-Guard, Vault and (later) Assets. The design, rollout and rollback plan is
+Guard, Vault and Assets. The design, rollout and rollback plan is
 [`docs/identity/MIGRATION_PLAN.md`](docs/identity/MIGRATION_PLAN.md).
 
 | Piece | Where |

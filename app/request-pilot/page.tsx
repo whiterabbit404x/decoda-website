@@ -51,7 +51,7 @@ export default async function RequestPilotPage({ searchParams }: { searchParams:
             <ul className="compact-list">
               <li>RWA Guard — available for pilots</li>
               <li>Decoda Vault — testnet pilot only</li>
-              <li>Decoda Assets — coming soon</li>
+              <li>Decoda Assets — testnet pilot only</li>
             </ul>
           </div>
         }

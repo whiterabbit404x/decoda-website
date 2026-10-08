@@ -157,7 +157,7 @@ export function validatePilotRequest(raw: unknown): PilotValidation {
 }
 
 export function productListText(products: readonly ProductKey[]): string {
-  return products.map((product) => (product === 'assets' ? `${PRODUCT_LABELS.assets} (coming soon)` : PRODUCT_LABELS[product])).join(', ');
+  return products.map((product) => PRODUCT_LABELS[product]).join(', ');
 }
 
 // ── Persistence ────────────────────────────────────────────────────────────

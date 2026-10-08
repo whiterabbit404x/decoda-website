@@ -41,7 +41,7 @@ export default async function OrganizationPage({ params }: { params: Promise<{ i
       <div className={styles.twoColumn}>
         <section className={styles.panel} aria-labelledby="entitlements">
           <h2 id="entitlements">Product entitlements</h2>
-          <p>Enforced server-side by every product on every request. Assets can be recorded but grants nothing until it launches.</p>
+          <p>Enforced server-side by every product on every request.</p>
           <div style={{ marginTop: 14 }}>
             {can('platform.entitlements.manage') ? (
               <EntitlementEditor organizationId={org.id} csrfToken={gate.csrfToken} entitlements={org.entitlements} />

@@ -84,8 +84,7 @@ export async function loadLauncher(client: DbClient, auth: AuthSnapshot, urls: P
 
   const products = PRODUCTS.map((product): LauncherProduct => {
     const row = accessRows.find((candidate) => candidate.product === product);
-    // Assets is shown as "Coming soon" to everyone until the catalog changes.
-    const accessState: AccessState = row?.access_state ?? (product === 'assets' ? 'product_unavailable' : 'no_membership');
+    const accessState: AccessState = row?.access_state ?? 'no_membership';
     const state = launcherState(accessState, row?.entitlement_status ?? null);
     return {
       product,
@@ -94,7 +93,7 @@ export async function loadLauncher(client: DbClient, auth: AuthSnapshot, urls: P
       state,
       accessState,
       url: launcherStateOpensProduct(state) ? productEntryUrl(urls[product]) : null,
-      requestAccessUrl: state === 'not_enabled' && product !== 'assets' ? `/request-pilot?product=${product}` : null,
+      requestAccessUrl: state === 'not_enabled' ? `/request-pilot?product=${product}` : null,
       expiresAt: row?.entitlement_expires_at ? row.entitlement_expires_at.toISOString() : null,
     };
   });
