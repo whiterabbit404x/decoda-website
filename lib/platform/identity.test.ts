@@ -3,12 +3,13 @@ import { describe, it } from 'node:test';
 import type { AuthSnapshot } from './actor';
 import { resolveActor } from './actor';
 import { activeGrantFor, grantPlatformAdmin, hasPermission, requirePermission, revokePlatformAdmin } from './admin-grants';
+import { productUrls } from './config';
 import { issueCsrfToken, isSameOrigin, verifyCsrfToken } from './csrf';
 import { withTransaction } from './db';
 import { PlatformError } from './errors';
 import { loadLauncher, soleOpenProduct } from './launcher';
 import { resolveSwitchTarget } from './organization-switch';
-import { evaluateAccess, type AccessFacts } from './products';
+import { evaluateAccess, productEntryUrl, type AccessFacts } from './products';
 import { safeReturnPath } from './return-to';
 import { recordSignOut, recordWebsiteSignIn } from './sign-in';
 import { dbIt, useTestDatabase } from './testing/database';
@@ -63,6 +64,27 @@ describe('return path validation', () => {
     assert.equal(safeReturnPath('/\\evil.test'), '/launcher');
     assert.equal(safeReturnPath('/pricing'), '/launcher');
     assert.equal(safeReturnPath(null), '/launcher');
+  });
+});
+
+describe('product destinations', () => {
+  it('Assets points at https://assets.decodasecurity.com by default, entered through its own sign-in', () => {
+    const names = ['DECODA_WEBSITE_URL', 'DECODA_RWA_GUARD_URL', 'DECODA_VAULT_URL', 'DECODA_ASSETS_URL', 'DECODA_ENV', 'VERCEL_ENV'];
+    const saved = Object.fromEntries(names.map((name) => [name, process.env[name]]));
+    try {
+      for (const name of names) delete process.env[name];
+      process.env.VERCEL_ENV = 'production';
+      const urls = productUrls();
+      assert.equal(urls.assets, 'https://assets.decodasecurity.com');
+      assert.equal(productEntryUrl(urls.assets), 'https://assets.decodasecurity.com/auth/sign-in');
+      assert.equal(urls.vault, 'https://vault.decodasecurity.com');
+      assert.equal(urls.rwa_guard, 'https://rwa.decodasecurity.com');
+    } finally {
+      for (const name of names) {
+        if (saved[name] === undefined) delete process.env[name];
+        else process.env[name] = saved[name];
+      }
+    }
   });
 });
 
@@ -135,19 +157,55 @@ describe('platform identity (database)', () => {
     assert.equal(rows.length, 1);
   });
 
-  dbIt('launcher: Guard + Vault open, Assets coming soon', async () => {
+  dbIt('launcher: Guard + Vault open; Assets, not entitled, offers an access request but never opens', async () => {
     const gateway = new FakeWorkOS();
     const { user, org } = await setupMember(gateway, { entitlements: { rwa_guard: 'enabled', vault: 'pilot' } });
     const client = await db().pool.connect();
     try {
       const view = await loadLauncher(client, snapshot(user.id, org.id), URLS);
       const states = Object.fromEntries(view.products.map((p) => [p.product, p.state]));
-      assert.deepEqual(states, { rwa_guard: 'open', vault: 'pilot', assets: 'coming_soon' });
+      assert.deepEqual(states, { rwa_guard: 'open', vault: 'pilot', assets: 'not_enabled' });
       // Each open product is entered through its own sign-in (SSO), on the configured origin.
       assert.equal(view.products.find((p) => p.product === 'rwa_guard')!.url, `${URLS.rwa_guard}/auth/sign-in`);
       assert.equal(view.products.find((p) => p.product === 'vault')!.url, `${URLS.vault}/auth/sign-in`);
-      assert.equal(view.products.find((p) => p.product === 'assets')!.url, null);
+      const assets = view.products.find((p) => p.product === 'assets')!;
+      assert.equal(assets.url, null);
+      assert.equal(assets.accessState, 'not_entitled');
+      assert.equal(assets.requestAccessUrl, '/request-pilot?product=assets');
       assert.equal(soleOpenProduct(view), null);
+    } finally {
+      client.release();
+    }
+  });
+
+  dbIt('launcher: an organization entitled to Assets opens it through its own sign-in, on the Assets origin', async () => {
+    const gateway = new FakeWorkOS();
+    const { user, org } = await setupMember(gateway, { entitlements: { assets: 'enabled', vault: 'pilot' } });
+    const client = await db().pool.connect();
+    try {
+      const view = await loadLauncher(client, snapshot(user.id, org.id), URLS);
+      const assets = view.products.find((p) => p.product === 'assets')!;
+      assert.equal(assets.label, 'Assets');
+      assert.equal(assets.state, 'open');
+      assert.equal(assets.accessState, 'granted');
+      assert.equal(assets.url, `${URLS.assets}/auth/sign-in`);
+      assert.equal(assets.requestAccessUrl, null);
+      assert.doesNotMatch(assets.description, /not yet available/i);
+      assert.equal(soleOpenProduct(view), null);
+    } finally {
+      client.release();
+    }
+  });
+
+  dbIt('launcher: an Assets-only organization forwards straight to Assets', async () => {
+    const gateway = new FakeWorkOS();
+    const { user, org } = await setupMember(gateway, { entitlements: { assets: 'pilot' } });
+    const client = await db().pool.connect();
+    try {
+      const view = await loadLauncher(client, snapshot(user.id, org.id), URLS);
+      assert.equal(soleOpenProduct(view)?.product, 'assets');
+      assert.equal(soleOpenProduct(view)?.state, 'pilot');
+      assert.equal(soleOpenProduct(view)?.url, `${URLS.assets}/auth/sign-in`);
     } finally {
       client.release();
     }
@@ -199,16 +257,29 @@ describe('platform identity (database)', () => {
         (await loadLauncher(client, snapshot(user.id, org.id), URLS)).products.map((p) => [p.product, p.url ? `${p.state} → ${p.url}` : p.state]),
       );
     try {
-      assert.deepEqual(await shown(), { rwa_guard: 'not_enabled', vault: 'not_enabled', assets: 'coming_soon' });
+      assert.deepEqual(await shown(), { rwa_guard: 'not_enabled', vault: 'not_enabled', assets: 'not_enabled' });
       await entitle('rwa_guard', 'enabled');
-      assert.deepEqual(await shown(), { rwa_guard: `open → ${URLS.rwa_guard}/auth/sign-in`, vault: 'not_enabled', assets: 'coming_soon' });
+      assert.deepEqual(await shown(), { rwa_guard: `open → ${URLS.rwa_guard}/auth/sign-in`, vault: 'not_enabled', assets: 'not_enabled' });
       await entitle('rwa_guard', 'suspended');
       await entitle('vault', 'pilot');
-      assert.deepEqual(await shown(), { rwa_guard: 'suspended', vault: `pilot → ${URLS.vault}/auth/sign-in`, assets: 'coming_soon' });
-      // Withdrawn, and Assets stays closed while the catalog says "coming soon", whatever its entitlement.
-      await entitle('vault', 'disabled');
       await entitle('assets', 'enabled');
-      assert.deepEqual(await shown(), { rwa_guard: 'suspended', vault: 'not_enabled', assets: 'coming_soon' });
+      assert.deepEqual(await shown(), {
+        rwa_guard: 'suspended',
+        vault: `pilot → ${URLS.vault}/auth/sign-in`,
+        assets: `open → ${URLS.assets}/auth/sign-in`,
+      });
+      await entitle('vault', 'disabled');
+      await entitle('assets', 'suspended');
+      assert.deepEqual(await shown(), { rwa_guard: 'suspended', vault: 'not_enabled', assets: 'suspended' });
+      // The catalog still gates: were Assets withdrawn to "coming soon", it closes whatever its entitlement.
+      await entitle('assets', 'enabled');
+      const before = await db().pool.query("SELECT availability FROM platform.products WHERE product = 'assets'");
+      await db().pool.query("UPDATE platform.products SET availability = 'coming_soon' WHERE product = 'assets'");
+      try {
+        assert.equal((await shown()).assets, 'coming_soon');
+      } finally {
+        await db().pool.query("UPDATE platform.products SET availability = $1 WHERE product = 'assets'", [before.rows[0].availability]);
+      }
     } finally {
       client.release();
     }

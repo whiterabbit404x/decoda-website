@@ -23,7 +23,7 @@ export const PRODUCT_LABELS: Record<ProductKey, string> = {
 export const PRODUCT_DESCRIPTIONS: Record<ProductKey, string> = {
   rwa_guard: 'Continuous security monitoring, detection and incident response for tokenized real-world assets.',
   vault: 'Digital asset operations: prepare, simulate and approve operations under deterministic policy (testnet MVP).',
-  assets: 'Tokenized asset lifecycle management. Not yet available.',
+  assets: 'Tokenized real-world asset lifecycle: structure, issue, distribute and service, executed through Vault (testnet MVP).',
 };
 
 export function isProductKey(value: unknown): value is ProductKey {

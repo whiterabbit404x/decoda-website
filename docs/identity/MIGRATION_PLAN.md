@@ -3,7 +3,8 @@
 Status: **approved for implementation on branches; no production cutover yet.**
 Owner: Decoda Platform (this repository owns the platform data boundary).
 Scope: `decoda-website` (www + platform), `decoda-vault`, `decoda-rwa-guard`.
-Assets (`assets.decodasecurity.com`) is prepared for, not built.
+Assets (`assets.decodasecurity.com`) was prepared for here and went live on the
+same identity and entitlements in platform migration 0003 (see D17).
 
 This document was written after inspecting all three repositories and before
 changing any of them. It records what exists today, what replaces it, the
@@ -135,7 +136,7 @@ product's data and never query each other.
 | D14 | Vault production accepts only WorkOS identity; password sign-in returns 410; demo seeding is refused in staging/production regardless of flags. Rollback = redeploy the previous release (all schema changes are additive). | No silent fallback, no public demo credentials in production. |
 | D15 | Guard gets an explicit, time-boxed migration mode: `legacy` → `dual` (WorkOS primary; legacy password only for not-yet-linked users; no new password sign-ups; sunset date enforced) → `workos`. | Plaintext passwords cannot be migrated; existing customers must keep working while they activate Decoda accounts. |
 | D16 | Existing Guard users migrate through a reviewed manifest: Guard export (dry-run) → platform import (dry-run, then apply) → WorkOS invitation → acceptance binds `workos_user_id` to the recorded legacy user id → Guard links on first WorkOS sign-in. Ambiguous identities are reported as `conflict`, never merged. | "Match only through a controlled migration process." |
-| D17 | `assets` exists in the product enum, catalog and contract with availability `coming_soon`; access is denied until the catalog marks it available. | Assets can consume the same identity/entitlements later without a new account system. |
+| D17 | `assets` exists in the product enum, catalog and contract. It shipped as `coming_soon` (access denied whatever the entitlement); migration `0003_assets_available.sql` marks it `available`, like RWA Guard and Vault, so an organization reaches Assets only with its own `enabled`/`pilot` entitlement. | Assets consumes the same identity/entitlements without a new account system. |
 | D18 | The hosted AuthKit domain is whatever the WorkOS environment serves. `auth.decodasecurity.com` is configured in WorkOS + DNS when ready; no code references it. `WORKOS_ISSUER` changes with it. | Don't fake a domain that doesn't exist yet. |
 
 ---
@@ -144,7 +145,7 @@ product's data and never query each other.
 
 | Table | Purpose / key constraints |
 |---|---|
-| `platform.products` | Catalog: `rwa_guard`, `vault` (`available`), `assets` (`coming_soon`). |
+| `platform.products` | Catalog: `rwa_guard`, `vault`, `assets` — all `available` (`assets` since migration 0003). |
 | `platform.users` | Internal UUID + `workos_user_id` (UNIQUE), email, name, status, `workos_updated_at`. |
 | `platform.organizations` | Internal UUID + `workos_organization_id` (UNIQUE, NULL until linked), unique slug, status, `security_settings`, `is_internal`. |
 | `platform.organization_memberships` | (org, user) UNIQUE, `workos_membership_id` UNIQUE, role `admin|member`, status mirrors WorkOS `active|inactive|pending`, source. |
@@ -188,7 +189,7 @@ membership is created.**
 ### 5.2 Review & provisioning (platform admin, www/admin)
 Approve → create/link platform org (unique slug) → create WorkOS org with
 `externalId = platform org id` (idempotency key) → set entitlements for the
-requested products (Assets only recorded while `coming_soon`) → send WorkOS
+requested products → send WorkOS
 invitation (role `admin`) → request `converted`. Reject records reviewer +
 internal note. Revoke invitation, resend, change/disable entitlements, and
 suspend orgs are separate audited actions. Every action checks the admin grant
@@ -401,7 +402,7 @@ Applications (per environment):
 | Decoda Website | `https://www.decodasecurity.com/auth/callback` | `https://www.decodasecurity.com/sign-in` | `https://www.decodasecurity.com/` |
 | Decoda RWA Guard | `https://rwa.decodasecurity.com/auth/callback` | `https://rwa.decodasecurity.com/auth/sign-in` | `https://rwa.decodasecurity.com/sign-in?signed_out=1` |
 | Decoda Vault | `https://vault.decodasecurity.com/auth/callback` | `https://vault.decodasecurity.com/auth/sign-in` | `https://vault.decodasecurity.com/sign-in?signed_out=1` |
-| Decoda Assets (later) | `https://assets.decodasecurity.com/auth/callback` | `https://assets.decodasecurity.com/auth/sign-in` | `https://assets.decodasecurity.com/` |
+| Decoda Assets | `https://assets.decodasecurity.com/auth/callback` | `https://assets.decodasecurity.com/auth/sign-in` | `https://assets.decodasecurity.com/` |
 
 Environment settings: sign-up **disabled / invite-only**; MFA **required**;
 organization domain JIT provisioning **off**; webhook endpoint

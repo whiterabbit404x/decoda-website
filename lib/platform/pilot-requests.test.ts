@@ -56,7 +56,7 @@ describe('Request Pilot validation', () => {
     if (!result.success) assert.ok(result.fieldErrors.requestedProducts);
   });
 
-  it('accepts Assets as registered interest', () => {
+  it('accepts Assets', () => {
     const result = validatePilotRequest({ ...valid, requestedProducts: ['assets'] });
     assert.equal(result.success, true);
   });

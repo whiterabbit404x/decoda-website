@@ -124,9 +124,8 @@ export function ApprovalForm({
         {(['rwa_guard', 'vault', 'assets'] as ProductKey[]).map((product) => (
           <div key={product} className={styles.orgItem}>
             <label className={styles.checkboxRow}>
-              <input type="checkbox" name={`enable_${product}`} defaultChecked={requestedProducts.includes(product) && product !== 'assets'} />
+              <input type="checkbox" name={`enable_${product}`} defaultChecked={requestedProducts.includes(product)} />
               {PRODUCT_LABELS[product]}
-              {product === 'assets' ? <span className={styles.badge}>Coming soon — recorded only</span> : null}
             </label>
             <span className={styles.inlineActions}>
               <select name={`status_${product}`} defaultValue="pilot" aria-label={`${PRODUCT_LABELS[product]} status`}>
@@ -223,10 +222,7 @@ export function EntitlementEditor({
               );
             }}
           >
-            <strong>
-              {PRODUCT_LABELS[product]}
-              {product === 'assets' ? <span className={styles.muted}> (coming soon — never grants access yet)</span> : null}
-            </strong>
+            <strong>{PRODUCT_LABELS[product]}</strong>
             <span className={styles.inlineActions}>
               <select name="status" defaultValue={current?.status ?? 'disabled'} aria-label={`${PRODUCT_LABELS[product]} status`}>
                 <option value="enabled">Enabled</option>

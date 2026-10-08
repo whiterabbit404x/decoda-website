@@ -42,7 +42,7 @@ export type PilotFieldErrors = Partial<Record<PilotField, string>>;
 export const PILOT_PRODUCT_OPTIONS = [
   { value: 'rwa_guard', label: 'RWA Guard', note: 'Security monitoring and incident response for tokenized RWAs.' },
   { value: 'vault', label: 'Decoda Vault', note: 'Digital asset operations — testnet pilot only; no real-money custody.' },
-  { value: 'assets', label: 'Decoda Assets', note: 'Coming soon — not yet available. Selecting it registers interest.' },
+  { value: 'assets', label: 'Decoda Assets', note: 'Tokenized real-world asset lifecycle — testnet pilot only; no securities offering.' },
 ] as const;
 
 export type PilotClientOutcome =

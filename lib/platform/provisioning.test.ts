@@ -3,7 +3,7 @@ import { randomBytes } from 'node:crypto';
 import { describe } from 'node:test';
 import type { AuthSnapshot } from './actor';
 import { resolveActor } from './actor';
-import { handleAdminMutation, parseApprovalInput, type AdminApiDeps } from './admin-api';
+import { handleAdminMutation, parseApprovalInput, type AdminAction, type AdminApiDeps } from './admin-api';
 import { grantPlatformAdmin, PLATFORM_PERMISSIONS, type PlatformPermission } from './admin-grants';
 import { issueCsrfToken } from './csrf';
 import { withTransaction } from './db';
@@ -11,6 +11,7 @@ import { PlatformError } from './errors';
 import {
   approvePilotRequest,
   ensureWorkOSOrganization,
+  parseEntitlementInput,
   rejectPilotRequest,
   resendInvitation,
   revokeInvitation,
@@ -24,7 +25,7 @@ import { recordWebsiteSignIn } from './sign-in';
 import { dbIt, useTestDatabase } from './testing/database';
 import { eventPayload, FakeWorkOS, signWebhook, wire } from './testing/fake-workos';
 import { handleWorkOSWebhook } from './webhooks';
-import type { WorkOSUser } from './workos';
+import type { WorkOSOrganization, WorkOSUser } from './workos';
 
 const SECRET = 'a'.repeat(48);
 const silent = { warn: () => undefined, error: () => undefined };
@@ -37,6 +38,8 @@ describe('platform provisioning and invitations', () => {
     deps: ProvisioningDeps;
     ctx: AdminContext;
     admin: WorkOSUser;
+    /** The platform admin's own (founder) organization. */
+    internal: WorkOSOrganization;
   }
 
   async function harness(permissions: PlatformPermission[] = [...PLATFORM_PERMISSIONS]): Promise<Harness> {
@@ -55,6 +58,7 @@ describe('platform provisioning and invitations', () => {
       return {
         gateway,
         admin,
+        internal,
         deps: { pool: db().pool, gateway, invitationExpiresInDays: 7 },
         ctx: { actor: { ...actor, platformUserId: actor.platformUserId! }, requestId: `req_${randomBytes(8).toString('hex')}`, ipHash: null },
       };
@@ -240,7 +244,7 @@ describe('platform provisioning and invitations', () => {
       await deliver(h.gateway, 'organization_membership.created', wire.membership(membership));
       await deliver(h.gateway, 'invitation.accepted', wire.invitation(invitation));
 
-      assert.deepEqual(await access(invitee.id, workosOrgId), { rwa_guard: 'granted', vault: 'granted', assets: 'product_unavailable' });
+      assert.deepEqual(await access(invitee.id, workosOrgId), { rwa_guard: 'granted', vault: 'granted', assets: 'not_entitled' });
       const role = await db().pool.query(
         `SELECT m.role FROM platform.organization_memberships m JOIN platform.users u ON u.id = m.user_id WHERE u.workos_user_id = $1`,
         [invitee.id],
@@ -304,7 +308,7 @@ describe('platform provisioning and invitations', () => {
 
     await setEntitlement(h.ctx, h.deps, approved.organizationId, { product: 'vault', status: 'disabled' });
     await setEntitlement(h.ctx, h.deps, approved.organizationId, { product: 'rwa_guard', status: 'suspended' });
-    assert.deepEqual(await access(invitee.id, workosOrgId), { rwa_guard: 'entitlement_suspended', vault: 'not_entitled', assets: 'product_unavailable' });
+    assert.deepEqual(await access(invitee.id, workosOrgId), { rwa_guard: 'entitlement_suspended', vault: 'not_entitled', assets: 'not_entitled' });
 
     await setEntitlement(h.ctx, h.deps, approved.organizationId, { product: 'rwa_guard', status: 'enabled' });
     await setOrganizationStatus(h.ctx, h.deps, approved.organizationId, 'suspended', 'contract paused');
@@ -389,6 +393,62 @@ describe('platform provisioning and invitations', () => {
       assert.equal(r3.status, 403);
       assert.equal((await r3.json()).error.code, 'PLATFORM_PERMISSION_DENIED');
       assert.equal(await deniedCount(), before + 3);
+    });
+
+    dbIt('grants the founder/admin organization Assets through the entitlement endpoint, audited, and not a customer organization', async () => {
+      const h = await harness();
+      const founder = await db().pool.query('SELECT id FROM platform.organizations WHERE workos_organization_id = $1', [h.internal.id]);
+      const founderOrgId: string = founder.rows[0].id;
+      const customer = await approvePilotRequest(h.ctx, h.deps, (await pendingRequest()).id, parseApprovalInput(approvalBody('ops@customer.test')));
+      assert.equal((await access(h.admin.id, h.internal.id)).assets, 'not_entitled');
+
+      // Exactly what POST /api/admin/organizations/<id>/entitlements runs (app/api/admin/organizations/[id]/entitlements/route.ts).
+      const setAssets = (organizationId: string): AdminAction => async ({ ctx, body, provisioning }) => {
+        await setEntitlement(ctx, provisioning, organizationId, parseEntitlementInput(body));
+        return {};
+      };
+      const auth = snapshot(h.admin, h.internal.id);
+      const response = await handleAdminMutation(
+        adminRequest(issueCsrfToken(auth.sessionId, SECRET), {}, { product: 'assets', status: 'enabled', plan: 'internal' }),
+        'platform.entitlements.manage',
+        deps(h, auth),
+        setAssets(founderOrgId),
+      );
+      assert.equal(response.status, 200, await response.clone().text());
+
+      assert.equal((await access(h.admin.id, h.internal.id)).assets, 'granted');
+      const audited = await db().pool.query(
+        `SELECT actor_type, actor_user_id, organization_id, metadata FROM platform.audit_events
+          WHERE action = 'entitlement.enabled' AND target_id = $1`,
+        [`${founderOrgId}:assets`],
+      );
+      assert.equal(audited.rows.length, 1);
+      assert.equal(audited.rows[0].actor_type, 'user');
+      assert.equal(audited.rows[0].actor_user_id, h.ctx.actor.platformUserId);
+      assert.equal(audited.rows[0].organization_id, founderOrgId);
+      assert.deepEqual(
+        { product: audited.rows[0].metadata.product, from: audited.rows[0].metadata.from, to: audited.rows[0].metadata.to, plan: audited.rows[0].metadata.plan },
+        { product: 'assets', from: null, to: 'enabled', plan: 'internal' },
+      );
+      const customerAssets = async () =>
+        (
+          await db().pool.query("SELECT 1 FROM platform.organization_product_entitlements WHERE product = 'assets' AND organization_id = $1", [
+            customer.organizationId,
+          ])
+        ).rows.length;
+      assert.equal(await customerAssets(), 0);
+
+      // The same endpoint refuses an admin without platform.entitlements.manage.
+      const limited = await harness(['platform.organizations.read']);
+      const limitedAuth = snapshot(limited.admin, limited.internal.id);
+      const refused = await handleAdminMutation(
+        adminRequest(issueCsrfToken(limitedAuth.sessionId, SECRET), {}, { product: 'assets', status: 'enabled' }),
+        'platform.entitlements.manage',
+        deps(limited, limitedAuth),
+        setAssets(customer.organizationId),
+      );
+      assert.equal(refused.status, 403);
+      assert.equal(await customerAssets(), 0);
     });
 
     dbIt('rejects malformed bodies and non-UUID identifiers safely', async () => {
