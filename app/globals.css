@@ -1,100 +1,157 @@
 /* ==========================================================================
-   Decoda Security — public corporate site global styles.
+   Decoda Security — global design system.
 
-   THEME MODEL (hybrid enterprise layout)
-     The site is LIGHT by default: an enterprise "workspace" surface
-     (#F7F9FC) with white cards, slate borders and navy text.
+   THEME
+     Light is the primary appearance: white and soft off-white surfaces, deep
+     navy type, refined teal/cyan accents. Any element carrying `.surface-dark`
+     REDEFINES the same token names to navy values, so its subtree (product
+     consoles, the final call to action) adapts with no per-component dark
+     variants. The platform surfaces (launcher, account, admin) read the same
+     tokens, so their names are a contract: --bg, --panel, --panel-2,
+     --panel-solid, --border, --border-strong, --text, --muted, --muted-strong,
+     --accent, --accent-strong, --accent-soft, --btn-secondary-*, --radius,
+     --shadow-sm.
 
-     Dark navy is applied by SCOPE, not by hardcoded colors: any element
-     carrying `.surface-dark` (plus the shared `.hero` / `.cta-panel`
-     primitives) REDEFINES the same token names to their navy values, so its
-     entire subtree — cards, borders, muted text, buttons — adapts with no
-     component-level branching. That is what keeps the navigation, hero,
-     final CTA and footer dark while the body of every page stays light.
-
-   LAYOUT MODEL
-     body (flex column) > SiteHeader + main.site-main + SiteFooter
-     `.site-main` is full-bleed so homepage sections can paint edge-to-edge
-     navy bands. The centered ~1260px column comes from `.container`
-     (homepage sections) and `.content-stack` (every other page), which share
-     the --container/--gutter tokens with the header and footer.
+   MOTION
+     Every hidden start state is gated on html[data-js='1'] (set by an inline
+     script before first paint). Without JavaScript nothing is ever hidden, and
+     because the state lives in the stylesheet there is no flash and no layout
+     shift. Reveals use CSS *animations* with `backwards` fill, so once they end
+     an element's own hover transitions work untouched. Only opacity and
+     transform animate. Under prefers-reduced-motion everything renders in its
+     final state.
    ========================================================================== */
 
 :root {
   color-scheme: light;
 
-  /* Light enterprise workspace */
-  --bg: #f7f9fc;
+  /* Surfaces */
+  --bg: #ffffff;
+  --bg-soft: #f6f8fb;
+  --bg-tint: #eef3f8;
   --panel: #ffffff;
-  --panel-2: #f1f5f9;
+  --panel-2: #f3f6fa;
   --panel-solid: #ffffff;
 
   /* Lines */
-  --border: #e2e8f0;
-  --border-strong: #cbd5e1;
+  --border: #e3e8ef;
+  --border-strong: #cfd8e3;
+  --hairline: rgba(11, 26, 46, 0.07);
 
-  /* Type */
-  --text: #0f172a;
-  --muted-strong: #334155;
-  --muted: #64748b;
+  /* Type (contrast on white: 17.5 / 9.9 / 5.9) */
+  --text: #0b1a2e;
+  --muted-strong: #33445c;
+  --muted: #56657b;
+  /* Decorative only (3:1) — never body text. */
+  --subtle: #8a96a8;
 
-  /* Accent (institutional blue) */
-  --accent: #2563eb;
-  --accent-2: #2563eb;
-  --accent-strong: #1d4ed8;
-  --accent-soft: rgba(37, 99, 235, 0.08);
+  /* Accent — teal/cyan. --accent is text-safe (5.1:1 on white). */
+  --accent: #0b7a80;
+  --accent-2: #0b7a80;
+  --accent-strong: #0a6b70;
+  --accent-bright: #14b8a6;
+  --accent-cyan: #06b6d4;
+  --accent-soft: rgba(13, 148, 136, 0.08);
+  --accent-line: rgba(13, 148, 136, 0.3);
   --on-accent: #ffffff;
 
+  /* Status */
+  --ok: #047857;
+  --ok-soft: #ecfdf5;
+  --ok-line: #a7f3d0;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+  --warn-line: #fde68a;
+  --info: #4f46e5;
+  --info-soft: #eef2ff;
+  --info-line: #c7d2fe;
+  --danger: #b91c1c;
+  --danger-soft: #fef2f2;
+  --danger-line: #fecaca;
+
   /* Buttons */
+  --btn-primary-bg: #0b1a2e;
+  --btn-primary-bg-hover: #142a4a;
+  --btn-primary-text: #ffffff;
   --btn-secondary-bg: #ffffff;
-  --btn-secondary-border: #cbd5e1;
+  --btn-secondary-border: #cfd8e3;
 
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
-  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.12);
+  /* Elevation */
+  --shadow-xs: 0 1px 2px rgba(11, 26, 46, 0.05);
+  --shadow-sm: 0 1px 2px rgba(11, 26, 46, 0.04), 0 2px 8px -2px rgba(11, 26, 46, 0.05);
+  --shadow: 0 1px 2px rgba(11, 26, 46, 0.04), 0 10px 28px -8px rgba(11, 26, 46, 0.1);
+  --shadow-lg: 0 2px 4px rgba(11, 26, 46, 0.04), 0 24px 56px -14px rgba(11, 26, 46, 0.18);
+  --shadow-xl: 0 12px 24px -10px rgba(11, 26, 46, 0.1), 0 48px 96px -24px rgba(11, 26, 46, 0.28);
 
-  /* Fixed navy values, for the few places that must stay navy regardless of
-     the surface they sit on (e.g. the dark band backgrounds themselves). */
-  --navy: #07111f;
-  --navy-2: #0b1220;
+  /* Fixed navy, for surfaces that are navy wherever they sit. */
+  --navy: #07142a;
+  --navy-2: #0b1d38;
 
-  /* Layout rhythm.
-     --container + --gutter define the ONE centered content grid shared by the
-     header, every page body, and the footer. The content column is
-     (--container − 2×--gutter):
-       1340 / 40  → 1260px content column
-       1416 / 48  → 1320px content column on large desktops */
-  --container: 1340px;
+  /* Type families (next/font sets --font-inter / --font-mono-src on <html>). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-mono-src), ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Layout. Content column = --container − 2 × --gutter. */
+  --container: 1296px;
   --gutter: 40px;
-  --radius: 16px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --header-h: 68px;
+  --section-y: clamp(80px, 11vw, 136px);
 
+  /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --dur-fast: 160ms;
+  --dur: 280ms;
+  --dur-slow: 760ms;
 }
 
-/* Dark navy scope. Every token below shadows its light counterpart for the
-   subtree, so shared components need no dark-mode variants of their own. */
-.surface-dark,
-.hero,
-.cta-panel {
+/* Navy scope. Every token below shadows its light counterpart for the subtree. */
+.surface-dark {
   color-scheme: dark;
 
-  --bg: #07111f;
+  --bg: #07142a;
+  --bg-soft: #0b1d38;
   --panel: rgba(255, 255, 255, 0.04);
   --panel-2: rgba(255, 255, 255, 0.07);
-  --panel-solid: #0b1220;
+  --panel-solid: #0d1f3b;
 
-  --border: rgba(148, 178, 216, 0.16);
-  --border-strong: rgba(148, 178, 216, 0.3);
+  --border: rgba(148, 178, 216, 0.15);
+  --border-strong: rgba(148, 178, 216, 0.28);
+  --hairline: rgba(148, 178, 216, 0.1);
 
   --text: #f1f5f9;
   --muted-strong: #cbd5e1;
-  --muted: #94a3b8;
+  --muted: #9aa8bd;
+  --subtle: #6b7a91;
 
-  --accent-2: #93c5fd;
-  --accent-soft: rgba(96, 165, 250, 0.12);
+  --accent: #5eead4;
+  --accent-2: #5eead4;
+  --accent-strong: #99f6e4;
+  --accent-soft: rgba(94, 234, 212, 0.1);
+  --accent-line: rgba(94, 234, 212, 0.32);
 
-  --btn-secondary-bg: rgba(255, 255, 255, 0.06);
-  --btn-secondary-border: rgba(148, 178, 216, 0.34);
+  --ok: #6ee7b7;
+  --ok-soft: rgba(16, 185, 129, 0.12);
+  --ok-line: rgba(110, 231, 183, 0.3);
+  --warn: #fcd34d;
+  --warn-soft: rgba(245, 158, 11, 0.12);
+  --warn-line: rgba(252, 211, 77, 0.3);
+  --info: #a5b4fc;
+  --info-soft: rgba(99, 102, 241, 0.14);
+  --info-line: rgba(165, 180, 252, 0.3);
+  --danger: #fca5a5;
+  --danger-soft: rgba(239, 68, 68, 0.12);
+  --danger-line: rgba(252, 165, 165, 0.3);
+
+  --btn-primary-bg: #ffffff;
+  --btn-primary-bg-hover: #e8fdf9;
+  --btn-primary-text: #0b1a2e;
+  --btn-secondary-bg: rgba(255, 255, 255, 0.05);
+  --btn-secondary-border: rgba(148, 178, 216, 0.3);
 
   --shadow-sm: 0 1px 2px rgba(2, 8, 20, 0.3);
   --shadow: 0 16px 40px rgba(2, 8, 20, 0.4);
@@ -105,27 +162,32 @@
 
 @media (min-width: 1440px) {
   :root {
-    --container: 1416px;
+    --container: 1360px;
     --gutter: 48px;
   }
 }
 
-/* Narrower gutters on phones so content — and the hero diagram in particular —
-   gets the width it needs to stay legible. Moves header, body and footer
-   together, since all three read the same token. */
 @media (max-width: 680px) {
   :root {
     --gutter: 20px;
+    --header-h: 64px;
   }
 }
 
-* {
+/* --------------------------------- Base ---------------------------------- */
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
+  /* Anchored sections clear the sticky header. */
+  scroll-padding-top: calc(var(--header-h) + 16px);
   background: var(--bg);
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -133,13 +195,17 @@ body {
   flex-direction: column;
   min-height: 100vh;
   margin: 0;
-  /* Light workspace surface. Dark bands (nav, hero, final CTA, footer) paint
-     their own navy background on top of it. */
   background: var(--bg);
   color: var(--text);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  font-optical-sizing: auto;
+  font-feature-settings: 'cv11', 'ss03';
   -webkit-font-smoothing: antialiased;
-  /* Guards against any single wide child forcing a horizontal scrollbar. */
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* No single wide child can force a horizontal scrollbar. */
   overflow-x: clip;
 }
 
@@ -153,12 +219,19 @@ input,
 select,
 textarea {
   font: inherit;
+  color: inherit;
 }
 
 h1,
 h2,
-h3 {
+h3,
+h4 {
   text-wrap: balance;
+  color: var(--text);
+}
+
+p {
+  text-wrap: pretty;
 }
 
 img,
@@ -166,13 +239,20 @@ svg {
   max-width: 100%;
 }
 
-/* Full-bleed main; the centered column comes from .container / .content-stack. */
+::selection {
+  background: rgba(20, 184, 166, 0.22);
+}
+
 .site-main {
   flex: 1 0 auto;
   width: 100%;
 }
 
-/* The one shared centered content column. */
+/* The skip link focuses <main>; it needs no ring of its own. */
+.site-main:focus {
+  outline: none;
+}
+
 .container,
 .content-stack {
   width: 100%;
@@ -181,81 +261,223 @@ svg {
   padding-inline: var(--gutter);
 }
 
-/* ------------------------- Shared primitives ---------------------------- */
-
-.eyebrow {
-  margin: 0 0 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--accent-2);
+.content-stack {
+  display: grid;
+  gap: 28px;
+  padding-block: 40px 88px;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-weight: 600;
+  transform: translateY(-160%);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* The open mobile menu (components/company/nav.tsx) locks page scroll. */
+html[data-menu-open] {
+  overflow: hidden;
+}
+
+/* ------------------------------ Typography ------------------------------- */
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: normal;
+}
+
+/* -------------------------------- Buttons -------------------------------- */
+
 .button-primary,
-.button-secondary {
+.button-secondary,
+.button-ghost {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 46px;
-  padding: 0 20px;
-  border-radius: 10px;
+  min-height: 44px;
+  padding: 0 18px;
   border: 1px solid transparent;
+  border-radius: 10px;
+  font-size: 0.9375rem;
   font-weight: 600;
-  font-size: 0.95rem;
+  letter-spacing: -0.006em;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease,
-    box-shadow 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    background-color var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out),
+    color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+.button-primary svg,
+.button-secondary svg,
+.button-ghost svg {
+  flex-shrink: 0;
+  transition: transform var(--dur) var(--ease-out);
 }
 
 .button-primary {
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: var(--shadow-sm);
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 1px 2px rgba(11, 26, 46, 0.18),
+    0 6px 16px -6px rgba(11, 26, 46, 0.35);
+}
+
+/* A single teal sheen sweeps across on hover. */
+.button-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 25%, rgba(94, 234, 212, 0.32) 50%, transparent 75%);
+  transform: translateX(-110%);
+  transition: transform 720ms var(--ease-out);
 }
 
 .button-primary:hover {
-  background: var(--accent-strong);
+  background: var(--btn-primary-bg-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 1px 2px rgba(11, 26, 46, 0.18),
+    0 12px 28px -10px rgba(13, 148, 136, 0.55);
+}
+
+.button-primary:hover::before {
+  transform: translateX(110%);
+}
+
+.button-primary:hover svg:last-child,
+.button-secondary:hover svg:last-child,
+.button-ghost:hover svg:last-child {
+  transform: translateX(3px);
+}
+
+.button-primary:active,
+.button-secondary:active,
+.button-ghost:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 80ms;
 }
 
 .button-secondary {
   border-color: var(--btn-secondary-border);
   background: var(--btn-secondary-bg);
   color: var(--text);
+  box-shadow: var(--shadow-xs);
 }
 
 .button-secondary:hover {
-  border-color: var(--accent);
+  border-color: var(--accent-line);
+  color: var(--text);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -10px rgba(11, 26, 46, 0.25);
+}
+
+.button-ghost {
+  min-height: 40px;
+  padding: 0 12px;
   color: var(--accent);
 }
 
-.surface-dark .button-secondary:hover,
-.hero .button-secondary:hover,
-.cta-panel .button-secondary:hover {
-  border-color: var(--accent-2);
-  color: var(--text);
+.button-ghost:hover {
+  background: var(--accent-soft);
 }
 
-/* Visible keyboard focus everywhere. */
+.button-lg {
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+.button-primary:disabled,
+.button-primary[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-primary:disabled::before {
+  display: none;
+}
+
+/* Focus: a ring that settles into place. */
 :focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 3px;
   border-radius: 6px;
 }
 
-.surface-dark :focus-visible,
-.hero :focus-visible,
-.cta-panel :focus-visible {
-  outline-color: #93c5fd;
+html[data-js='1'] :focus-visible {
+  animation: focus-settle 220ms var(--ease-out);
+}
+
+@keyframes focus-settle {
+  from {
+    outline-offset: 7px;
+    outline-color: transparent;
+  }
+}
+
+.surface-dark :focus-visible {
+  outline-color: #5eead4;
 }
 
 /* The header's account actions ("Sign in" / "Request pilot", or the signed-in
    person's name / "Open launcher") are decided after load
    (components/company/account-action.tsx). With JavaScript they stay hidden
-   until then, so a signed-in visitor never sees "Sign in" or "Request pilot"; if
-   the answer is slow they show anyway. Without JavaScript they are always the
-   signed-out links. */
+   until then, so a signed-in visitor never sees "Sign in" or "Request pilot";
+   if the answer is slow they show anyway. Without JavaScript they are always
+   the signed-out links. */
 html[data-js='1'] [data-account-pending] {
   visibility: hidden;
   animation: account-action-fallback 0s linear 2.5s forwards;
@@ -267,368 +489,188 @@ html[data-js='1'] [data-account-pending] {
   }
 }
 
-/* ========================= Scroll reveal system ==========================
-   The hidden start state is gated on html[data-js='1'] (set by a tiny inline
-   script in the root layout). With JavaScript unavailable the attribute is
-   never set, so every section renders in its final, fully visible state — and
-   because the state is in the stylesheet rather than applied after hydration,
-   there is no flash and no layout shift. Only opacity/transform animate.
+/* ============================ Motion system ==============================
+   <Reveal> / <RevealGroup> (components/motion/reveal.tsx) set
+   data-revealed once an element scrolls into view. Variants: up (default),
+   fade, scale, left, right. --reveal-delay offsets one element; groups stagger
+   their direct children by --stagger (index from :nth-child below).
    ======================================================================== */
 
-.reveal,
-.reveal-group > * {
-  transition: opacity 620ms var(--ease-out), transform 620ms var(--ease-out);
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-distance, 22px), 0);
+  }
 }
 
-html[data-js='1'] .reveal,
-html[data-js='1'] .reveal-group > * {
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes reveal-scale {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0) scale(0.965);
+  }
+}
+
+@keyframes reveal-left {
+  from {
+    opacity: 0;
+    transform: translate3d(-28px, 0, 0);
+  }
+}
+
+@keyframes reveal-right {
+  from {
+    opacity: 0;
+    transform: translate3d(28px, 0, 0);
+  }
+}
+
+html[data-js='1'] .reveal:not([data-revealed]),
+html[data-js='1'] .reveal-group:not([data-revealed]) > * {
   opacity: 0;
-  transform: translateY(28px);
 }
 
-html[data-js='1'] .reveal[data-revealed='true'],
-html[data-js='1'] .reveal-group[data-revealed='true'] > * {
-  opacity: 1;
-  transform: none;
+html[data-js='1'] .reveal[data-revealed] {
+  animation: reveal-up var(--dur-slow) var(--ease-out) var(--reveal-delay, 0ms) backwards;
 }
 
-/* Product preview: the same one-shot reveal with a touch of scale, so the
-   app frame settles into place instead of sliding. */
-html[data-js='1'] .reveal.reveal-rise {
-  transform: translateY(24px) scale(0.985);
+html[data-js='1'] .reveal[data-revealed][data-variant='fade'] {
+  animation-name: reveal-fade;
 }
 
-html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
-  transform: none;
+html[data-js='1'] .reveal[data-revealed][data-variant='scale'] {
+  animation-name: reveal-scale;
+  animation-duration: 900ms;
 }
 
-/* Staggered entry for grid/list children — one observer per group. */
-.reveal-group > *:nth-child(2) {
-  transition-delay: 90ms;
+html[data-js='1'] .reveal[data-revealed][data-variant='left'] {
+  animation-name: reveal-left;
 }
 
-.reveal-group > *:nth-child(3) {
-  transition-delay: 180ms;
+html[data-js='1'] .reveal[data-revealed][data-variant='right'] {
+  animation-name: reveal-right;
 }
 
-.reveal-group > *:nth-child(4) {
-  transition-delay: 270ms;
+html[data-js='1'] .reveal-group[data-revealed] > * {
+  animation: reveal-up var(--dur-slow) var(--ease-out) backwards;
+  animation-delay: calc(var(--reveal-delay, 0ms) + var(--i, 0) * var(--stagger, 80ms));
 }
 
-/* =====================================================================
-   Component classes for the OTHER marketing pages (not the homepage):
-   pricing, contact, platform, solution, and legal routes.
-   ===================================================================== */
+.reveal-group > :nth-child(2) { --i: 1; }
+.reveal-group > :nth-child(3) { --i: 2; }
+.reveal-group > :nth-child(4) { --i: 3; }
+.reveal-group > :nth-child(5) { --i: 4; }
+.reveal-group > :nth-child(6) { --i: 5; }
+.reveal-group > :nth-child(7) { --i: 6; }
+.reveal-group > :nth-child(8) { --i: 7; }
+.reveal-group > :nth-child(9) { --i: 8; }
+.reveal-group > :nth-child(10) { --i: 9; }
+.reveal-group > :nth-child(11) { --i: 10; }
+.reveal-group > :nth-child(12) { --i: 11; }
 
-.info-card,
-.stat-card,
-.highlight-panel,
-.feature-banner,
-.contact-form,
-.contact-details,
-.shot-card,
-.hero-panel,
-.legal-section,
-.pricing-card {
-  border: 1px solid var(--border);
-  background: var(--panel);
-  box-shadow: var(--shadow-sm);
-}
-
-.cta-actions,
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.hero h1,
-.section-intro h2,
-.info-card h3,
-.feature-banner h3,
-.shot-card h3,
-.cta-panel h2 {
-  letter-spacing: -0.02em;
-}
-
-.section-intro p,
-.info-card p,
-.hero-copy,
-.highlight-panel p,
-.feature-banner p,
-.shot-card p,
-.cta-panel p,
-.contact-details p,
-.form-note,
-.compact-list,
-.priority-list {
-  color: var(--muted);
-}
-
-.content-stack {
-  display: grid;
-  gap: 28px;
-  padding-block: 40px 72px;
-}
-
-/* Page hero for the inner routes: a dark navy block that mirrors the
-   homepage hero band, sitting on the light workspace below it. */
-.hero {
-  border-radius: 20px;
-  padding: 44px 40px;
-  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
-  border: 1px solid var(--border);
-}
-
-.hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
-  gap: 28px;
-  align-items: center;
-}
-
-.hero h1 {
-  font-size: clamp(2.1rem, 3.8vw, 3rem);
-  line-height: 1.1;
-  margin: 0 0 18px;
-  max-width: 18ch;
-  color: var(--text);
-}
-
-.hero-copy,
-.section-intro > p:last-child,
-.cta-panel > div > p:last-child {
-  font-size: 1.05rem;
-  line-height: 1.65;
-  max-width: 66ch;
-}
-
-.hero-panel,
-.highlight-panel,
-.feature-banner,
-.contact-form,
-.contact-details {
-  border-radius: 16px;
-  padding: 24px;
-}
-
-.stat-grid,
-.card-grid,
-.outcome-grid,
-.contact-grid {
-  display: grid;
-  gap: 18px;
-}
-
-.stat-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.stat-card {
-  border-radius: 14px;
-  padding: 18px;
-}
-
-.stat-card strong {
-  display: block;
-  font-size: 1.5rem;
-  margin-bottom: 8px;
-}
-
-.section-grid {
-  display: grid;
-  gap: 22px;
-}
-
-.section-intro h2,
-.cta-panel h2 {
-  margin: 0 0 12px;
-  font-size: clamp(1.7rem, 2.8vw, 2.3rem);
-  color: var(--text);
-}
-
-.three-up {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.four-up {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.two-up,
-.contact-grid,
-.two-column-layout {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.info-card,
-.shot-card {
-  border-radius: var(--radius);
-  padding: 24px;
-}
-
-.info-card h3,
-.shot-card h3,
-.feature-banner h3 {
-  margin: 0 0 12px;
-  font-size: 1.15rem;
-  color: var(--text);
-}
-
-.priority-list,
-.compact-list {
+/* A hairline that draws outward from its centre when its section reveals. */
+.rule-draw {
+  height: 1px;
+  border: 0;
   margin: 0;
-  padding-left: 20px;
-  display: grid;
-  gap: 12px;
+  background: linear-gradient(90deg, transparent, var(--border-strong) 18%, var(--accent-line) 50%, var(--border-strong) 82%, transparent);
 }
 
-.priority-list li::marker,
-.compact-list li::marker {
-  color: var(--accent-2);
+html[data-js='1'] .reveal[data-revealed] .rule-draw,
+html[data-js='1'] .rule-draw.reveal[data-revealed] {
+  animation: rule-draw 1200ms var(--ease-out) 120ms backwards;
 }
 
-.feature-banner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  border-radius: 18px;
-  padding: 28px;
+@keyframes rule-draw {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
 }
 
-/* Final CTA panel on the inner routes — dark navy, matching the homepage. */
-.cta-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  border-radius: 20px;
-  padding: 40px;
-  background: linear-gradient(180deg, var(--navy) 0%, var(--navy-2) 100%);
-}
-
-.shot-frame {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel-2);
-  padding: 14px;
-  margin-bottom: 18px;
-}
-
-.shot-header {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-
-.shot-header span {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--border-strong);
-}
-
-.shot-body {
-  display: grid;
-  gap: 12px;
-}
-
-.shot-chart {
-  height: 120px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.16), rgba(37, 99, 235, 0.02));
-}
-
-.shot-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.shot-grid div {
-  height: 44px;
-  border-radius: 10px;
-  background: #ffffff;
-  border: 1px solid var(--border);
-}
-
-.outcome-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.outcome-grid strong {
-  display: block;
-  margin-bottom: 10px;
-  color: var(--accent-2);
-}
-
-.contact-details {
-  display: grid;
-  gap: 16px;
-}
-
-.contact-details a {
-  color: var(--accent);
-  font-weight: 500;
-}
-
-.contact-details a:hover {
-  text-decoration: underline;
-}
+/* ------------------------------ Forms (shared) --------------------------- */
 
 .contact-form {
   display: grid;
-  gap: 16px;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--panel);
+  box-shadow: var(--shadow);
 }
 
 .contact-form label {
   display: grid;
   gap: 8px;
   color: var(--muted-strong);
+  font-size: 0.9375rem;
+}
+
+.contact-form label > span {
+  font-weight: 500;
 }
 
 .contact-form input,
 .contact-form select,
 .contact-form textarea {
   width: 100%;
+  min-height: 46px;
   border: 1px solid var(--border-strong);
   border-radius: 10px;
   background: #ffffff;
   color: var(--text);
-  padding: 13px 15px;
+  padding: 12px 14px;
+  font-size: 1rem;
+  transition:
+    border-color var(--dur) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out);
+}
+
+.contact-form textarea {
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.contact-form input:hover,
+.contact-form select:hover,
+.contact-form textarea:hover {
+  border-color: #b8c4d3;
+}
+
+.contact-form input:focus-visible,
+.contact-form select:focus-visible,
+.contact-form textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.16);
+  animation: none;
 }
 
 .contact-form input::placeholder,
 .contact-form textarea::placeholder {
-  color: #94a3b8;
+  color: #8a96a8;
+}
+
+.contact-form .button-primary {
+  justify-self: start;
+  min-width: 200px;
 }
 
 .form-note {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted);
 }
 
-/* Contact form: label text row inside each grid label. */
-.contact-form label > span {
-  font-weight: 500;
-}
-
-/* Disabled submit (while a request is in flight). */
-.button-primary:disabled,
-.button-primary[aria-disabled='true'] {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.button-primary:disabled:hover,
-.button-primary[aria-disabled='true']:hover {
-  background: var(--accent);
-}
-
-/* Per-field validation messages. */
 .field-error {
-  color: #b91c1c;
+  color: var(--danger);
   font-size: 0.85rem;
   font-weight: 500;
 }
@@ -639,7 +681,6 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
   border-color: #dc2626;
 }
 
-/* Inline success / error status panels. */
 .form-status {
   margin: 0;
   padding: 12px 14px;
@@ -667,10 +708,9 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
   text-decoration: underline;
 }
 
-/* Request Pilot: product-interest checkboxes. */
 .pilot-products {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   margin: 0;
   padding: 14px 16px 16px;
   border: 1px solid var(--border-strong);
@@ -686,15 +726,33 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
 .contact-form .pilot-product-option {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   cursor: pointer;
+  transition:
+    background-color var(--dur) var(--ease-out),
+    border-color var(--dur) var(--ease-out);
+}
+
+.contact-form .pilot-product-option:hover {
+  background: var(--bg-soft);
+}
+
+.contact-form .pilot-product-option:has(input:checked) {
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
 }
 
 .contact-form .pilot-product-option input {
-  width: auto;
-  margin: 4px 0 0;
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 2px 0 0;
   padding: 0;
   accent-color: var(--accent);
+  flex-shrink: 0;
 }
 
 .pilot-product-option > span {
@@ -702,13 +760,17 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
   gap: 2px;
 }
 
+.pilot-product-option strong {
+  color: var(--text);
+}
+
 .pilot-product-note {
   color: var(--muted);
-  font-size: 0.88rem;
+  font-size: 0.875rem;
   font-weight: 400;
 }
 
-/* Honeypot field: present in the DOM, hidden from people and assistive tech. */
+/* Honeypot: present in the DOM, hidden from people and assistive tech. */
 .contact-honeypot {
   position: absolute;
   width: 1px;
@@ -722,112 +784,20 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
   white-space: nowrap;
 }
 
-.public-page-hero h1 {
-  max-width: 20ch;
-  font-size: clamp(2rem, 3.6vw, 2.8rem);
-}
-
-.legal-stack {
-  display: grid;
-  gap: 16px;
-}
-
-.legal-section,
-.pricing-card {
-  border-radius: var(--radius);
-  padding: 24px;
-}
-
-/* Pricing cards line their actions up along the bottom of the row, whatever
-   the length of the plan's feature list. */
-.pricing-card {
-  display: flex;
-  flex-direction: column;
-}
-
-.pricing-card .cta-actions {
-  margin-top: auto;
-  padding-top: 22px;
-}
-
-.pricing-card .cta-actions a {
-  flex: 1 1 auto;
-}
-
-.legal-section h2,
-.pricing-card h2 {
-  margin: 0 0 12px;
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.legal-section p {
-  color: var(--muted);
-  line-height: 1.7;
-  margin: 0;
-}
-
-.pricing-price {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--text);
-  margin: 0 0 12px;
-}
-
-.pricing-price span {
-  font-size: 0.95rem;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.pricing-card p {
-  color: var(--muted);
-}
-
-/* ------------------------------ Responsive ------------------------------ */
-
-@media (max-width: 980px) {
-  .hero-grid,
-  .three-up,
-  .four-up,
-  .two-up,
-  .contact-grid,
-  .two-column-layout,
-  .outcome-grid,
-  .stat-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 680px) {
+  .contact-form {
+    padding: 22px 18px;
   }
 
-  .feature-banner,
-  .cta-panel {
-    flex-direction: column;
-    align-items: stretch;
+  .contact-form .button-primary {
+    justify-self: stretch;
   }
 }
 
-@media (max-width: 720px) {
-  .hero,
-  .hero-panel,
-  .highlight-panel,
-  .feature-banner,
-  .cta-panel,
-  .contact-form,
-  .contact-details,
-  .info-card,
-  .shot-card {
-    border-radius: 16px;
-    padding: 24px 22px;
-  }
-
-  .hero h1 {
-    max-width: none;
-  }
-}
-
-/* ---------------------------- Reduced motion ----------------------------
-   Everything is shown in its final, completed state: no looping hero motion,
-   no lifecycle sequence, no translate-in reveals. The page stays fully
-   legible and polished with zero motion and no OS changes required.
+/* ---------------------------- Reduced motion -----------------------------
+   Everything renders in its final, completed state: no looping motion, no
+   sequences, no translate-in reveals. The account-action fallback is exempt —
+   it is a visibility timer, not motion, and must still fire.
    ------------------------------------------------------------------------ */
 
 @media (prefers-reduced-motion: reduce) {
@@ -835,16 +805,16 @@ html[data-js='1'] .reveal.reveal-rise[data-revealed='true'] {
     scroll-behavior: auto;
   }
 
-  *,
+  *:not([data-account-pending]),
   *::before,
   *::after {
     animation: none !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
   }
 
-  html[data-js='1'] .reveal,
-  html[data-js='1'] .reveal-group > * {
-    opacity: 1 !important;
-    transform: none !important;
+  html[data-js='1'] .reveal:not([data-revealed]),
+  html[data-js='1'] .reveal-group:not([data-revealed]) > * {
+    opacity: 1;
   }
 }

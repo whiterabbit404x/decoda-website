@@ -24,7 +24,7 @@ const validBody = {
   name: 'Jane Smith',
   email: 'jane@institution.com',
   company: 'Institution',
-  interestArea: 'RWA Security demo',
+  interestArea: 'Decoda RWA Guard demo or pilot',
   message: 'We are evaluating custody controls for an RWA program.',
 };
 

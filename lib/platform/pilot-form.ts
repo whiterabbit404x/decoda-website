@@ -40,7 +40,7 @@ export type PilotFieldErrors = Partial<Record<PilotField, string>>;
 
 /** How each product is offered on the form — never implying availability that does not exist. */
 export const PILOT_PRODUCT_OPTIONS = [
-  { value: 'rwa_guard', label: 'RWA Guard', note: 'Security monitoring and incident response for tokenized RWAs.' },
+  { value: 'rwa_guard', label: 'Decoda RWA Guard', note: 'Security monitoring and incident response for tokenized RWAs — available for pilot evaluation.' },
   { value: 'vault', label: 'Decoda Vault', note: 'Digital asset operations — testnet pilot only; no real-money custody.' },
   { value: 'assets', label: 'Decoda Assets', note: 'Tokenized real-world asset lifecycle — testnet pilot only; no securities offering.' },
 ] as const;

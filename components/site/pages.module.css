@@ -1,0 +1,549 @@
+/* ==========================================================================
+   Inner-page layouts: platform, company, pricing, contact, request pilot,
+   legal.
+   ========================================================================== */
+
+/* ---------------------------- Platform status ---------------------------- */
+
+.statusCard {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-lg);
+}
+
+.statusCardTitle {
+  margin: 0 0 8px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.statusCard ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.statusCard li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.statusCard li:last-child {
+  border-bottom: 0;
+  padding-bottom: 4px;
+}
+
+.statusCard li > div {
+  display: grid;
+  gap: 2px;
+}
+
+.statusCard a {
+  font-weight: 650;
+  color: var(--text);
+}
+
+.statusCard a:hover {
+  color: var(--accent);
+}
+
+.statusCard li span {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+/* -------------------------------- Company -------------------------------- */
+
+.mission {
+  max-width: 980px;
+}
+
+.missionQuote {
+  margin: 0;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.026em;
+}
+
+.productRows {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.productRows li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 32px;
+  padding: 24px 26px;
+  border-bottom: 1px solid var(--border);
+}
+
+.productRows li:last-child {
+  border-bottom: 0;
+}
+
+.productRows li > div {
+  flex: 1 1 420px;
+}
+
+.productRows h3 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.productRows h3 a:hover {
+  color: var(--accent);
+}
+
+.productRows p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.contactStrip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 28px 40px;
+}
+
+.contactStrip > div:first-child {
+  max-width: 640px;
+}
+
+.contactActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* -------------------------------- Pricing -------------------------------- */
+
+.pricingPlans {
+  padding-bottom: var(--section-y);
+}
+
+.pricingNote {
+  max-width: 760px;
+  margin: 32px auto 0;
+  text-align: center;
+}
+
+.pricingNote p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.tableWrap {
+  /* Positioned so visually-hidden labels inside the table stay inside its scroll clip. */
+  position: relative;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+  -webkit-overflow-scrolling: touch;
+}
+
+.compare {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 0.94rem;
+}
+
+.compare th,
+.compare td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare tbody tr:last-child th,
+.compare tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.compare thead th {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  vertical-align: bottom;
+}
+
+.compare tbody th {
+  width: 26%;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.compare td {
+  color: var(--muted-strong);
+}
+
+.compare tbody tr {
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+
+.compare tbody tr:hover {
+  background: var(--bg-soft);
+}
+
+.compare [data-recommended] {
+  background: rgba(20, 184, 166, 0.04);
+}
+
+.compareName {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 650;
+  color: var(--text);
+}
+
+.comparePrice {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.compareCheck {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tableFoot {
+  max-width: 760px;
+  margin: 20px auto 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  text-align: center;
+  color: var(--muted);
+}
+
+.inlineLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.inlineLink svg {
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.inlineLink:hover svg {
+  transform: translateX(3px);
+}
+
+/* ------------------------- Contact / request pilot ----------------------- */
+
+.formSection {
+  padding-bottom: var(--section-y);
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  gap: clamp(32px, 5vw, 64px);
+  align-items: start;
+}
+
+.formAside {
+  position: sticky;
+  top: calc(var(--header-h) + 32px);
+  display: grid;
+  gap: 16px;
+}
+
+.asideBlock {
+  padding: 22px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+}
+
+.asideBlock :global(.eyebrow) {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.asideBlock > p:not(:global(.eyebrow)) {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.asideHighlight {
+  border-color: var(--accent-line);
+  background: linear-gradient(160deg, rgba(20, 184, 166, 0.07), #ffffff 60%);
+}
+
+.asideHighlight .inlineLink {
+  margin-top: 12px;
+}
+
+.asideEmail {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.asideEmail svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+
+.asideEmail:hover {
+  color: var(--accent);
+}
+
+.availability {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.availability li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  font-size: 0.95rem;
+}
+
+.steps {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.steps li > span:last-child {
+  display: grid;
+  gap: 2px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.steps strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.stepNum {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border: 1px solid var(--accent-line);
+  border-radius: 50%;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+/* --------------------------------- Legal --------------------------------- */
+
+.legalHero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(48px, 7vw, 88px) 0 clamp(32px, 4vw, 48px);
+}
+
+.legalHeroInner {
+  position: relative;
+  z-index: 1;
+}
+
+.legalHero h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 4.4vw, 3.4rem);
+  font-weight: 650;
+  line-height: 1.06;
+  letter-spacing: -0.038em;
+}
+
+.legalHero p:not(:global(.eyebrow)) {
+  max-width: 68ch;
+  margin: 18px 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+  color: var(--muted);
+}
+
+.legalUpdated {
+  font-size: 0.875rem !important;
+}
+
+.legalBody {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: clamp(32px, 5vw, 72px);
+  align-items: start;
+  padding-bottom: var(--section-y);
+}
+
+.legalToc {
+  position: sticky;
+  top: calc(var(--header-h) + 32px);
+  padding-top: 6px;
+}
+
+.legalToc p {
+  margin: 0 0 12px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legalToc ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0 0 0 14px;
+  border-left: 1px solid var(--border);
+  list-style: none;
+}
+
+.legalToc a {
+  display: block;
+  padding: 5px 0;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  color: var(--muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.legalToc a:hover {
+  color: var(--accent);
+}
+
+.legalArticle {
+  max-width: 760px;
+}
+
+.legalArticle section {
+  padding: 28px 0;
+  border-top: 1px solid var(--border);
+}
+
+.legalArticle section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.legalArticle h2 {
+  margin: 0 0 12px;
+  font-size: 1.25rem;
+  font-weight: 640;
+  letter-spacing: -0.018em;
+}
+
+.legalArticle h2 span {
+  margin-right: 4px;
+  color: var(--accent);
+}
+
+.legalArticle p,
+.legalArticle li {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--muted-strong);
+}
+
+.legalArticle ul {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.legalArticle li::marker {
+  color: var(--accent);
+}
+
+.legalArticle a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ------------------------------ Responsive ------------------------------- */
+
+@media (max-width: 980px) {
+  .formGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .formAside {
+    position: static;
+  }
+
+  .legalBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .legalToc {
+    position: static;
+  }
+}

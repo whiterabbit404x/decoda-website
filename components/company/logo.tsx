@@ -17,16 +17,16 @@ export function DecodaSvgDefs() {
     <svg width="0" height="0" aria-hidden="true" focusable="false" style={{ position: 'absolute' }}>
       <defs>
         <linearGradient id="decoda-shield-stroke" x1="8" y1="3" x2="32" y2="37" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#7dd3fc" />
-          <stop offset="1" stopColor="#2563eb" />
+          <stop stopColor="#2dd4bf" />
+          <stop offset="1" stopColor="#0e7490" />
         </linearGradient>
         <linearGradient id="decoda-shield-fill-soft" x1="20" y1="3" x2="20" y2="37" gradientUnits="userSpaceOnUse">
-          <stop stopColor="rgba(37, 99, 235, 0.24)" />
-          <stop offset="1" stopColor="rgba(8, 20, 40, 0.35)" />
+          <stop stopColor="rgba(20, 184, 166, 0.16)" />
+          <stop offset="1" stopColor="rgba(11, 29, 56, 0.1)" />
         </linearGradient>
         <linearGradient id="decoda-shield-fill-strong" x1="20" y1="3" x2="20" y2="37" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#1d4ed8" />
-          <stop offset="1" stopColor="#0b1c3a" />
+          <stop stopColor="#0f3b4f" />
+          <stop offset="1" stopColor="#07142a" />
         </linearGradient>
       </defs>
     </svg>
@@ -35,7 +35,7 @@ export function DecodaSvgDefs() {
 
 /**
  * The Decoda Security shield mark. Drawn as inline SVG so it stays crisp at every
- * size and inherits the site's electric-blue accent. No raster/logo asset exists
+ * size and carries the site's teal accent. No raster/logo asset exists
  * in the repository, so this is the canonical brand mark.
  */
 export function DecodaShield({ size = 34, className, strong = false }: ShieldProps) {
@@ -58,7 +58,7 @@ export function DecodaShield({ size = 34, className, strong = false }: ShieldPro
       />
       <path
         d="M14 20.4 18.2 24.6 26.6 15.8"
-        stroke={strong ? '#e0f2fe' : 'url(#decoda-shield-stroke)'}
+        stroke={strong ? '#99f6e4' : 'url(#decoda-shield-stroke)'}
         strokeWidth={2.6}
         strokeLinecap="round"
         strokeLinejoin="round"

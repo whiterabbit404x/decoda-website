@@ -14,8 +14,9 @@
 
 /** Allowed values for the "Interest area" select. Server-side allowlist. */
 export const INTEREST_AREAS = [
-  'RWA Security demo',
-  'Platform roadmap discussion',
+  'Decoda RWA Guard demo or pilot',
+  'Pricing and plans',
+  'Decoda Vault or Decoda Assets',
   'Partnership inquiry',
   'Media or investor request',
 ] as const;
