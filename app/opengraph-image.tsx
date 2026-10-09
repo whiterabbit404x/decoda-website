@@ -18,24 +18,29 @@ export default function OpengraphImage() {
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '72px 80px',
-          background: 'linear-gradient(160deg, #0e2342 0%, #07142a 70%)',
+          background: 'linear-gradient(135deg, #0e2342 0%, #07142a 55%, #0a3340 100%)',
           color: '#f1f5f9',
           fontFamily: 'sans-serif',
           position: 'relative',
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: -180,
-            right: -160,
-            width: 640,
-            height: 640,
-            borderRadius: 640,
-            background: 'radial-gradient(closest-side, rgba(45, 212, 191, 0.35), rgba(45, 212, 191, 0))',
-            display: 'flex',
-          }}
-        />
+        {/* The radar rings used across the site, drawn with borders (reliable in the OG renderer). */}
+        {[620, 440, 260].map((d) => (
+          <div
+            key={d}
+            style={{
+              position: 'absolute',
+              top: 120 - d / 2,
+              right: 160 - d / 2,
+              width: d,
+              height: d,
+              borderRadius: d,
+              border: '1.5px solid rgba(94, 234, 212, 0.22)',
+              display: 'flex',
+            }}
+          />
+        ))}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: 'linear-gradient(90deg, #14b8a6, #06b6d4)', display: 'flex' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <svg width="56" height="56" viewBox="0 0 40 40" fill="none">
             <path

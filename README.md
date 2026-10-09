@@ -1,17 +1,47 @@
 # Decoda Website
 
-Public-facing Next.js marketing website for Decoda, positioning the company as the parent brand and RWA Security as the current flagship solution.
+Public website for Decoda Security — security and operational infrastructure for
+tokenized finance — led by **Decoda RWA Guard** (available for pilot evaluation),
+with **Decoda Vault** (in development, testnet) and **Decoda Assets** (sandbox
+prototype) presented as the ecosystem roadmap.
 
 ## Routes
 
-- `/`
-- `/solutions/rwa-security`
-- `/platform`
-- `/contact`
+- `/` — homepage
+- `/products/guard`, `/products/vault`, `/products/assets` — product pages
+  (`/solutions/rwa-security` redirects to `/products/guard`)
+- `/platform` — the Decoda ecosystem and shared platform
+- `/pricing`, `/company`, `/contact`
 - `/request-pilot` — Request Pilot (Decoda is invite-only; this never creates an account)
+- `/privacy`, `/terms`, `/refund-policy`
 - `/sign-in` → shared Decoda sign-in (WorkOS AuthKit) → `/launcher`
 - `/launcher`, `/account` — product launcher and account/security (signed in)
 - `/admin/*` — platform admin console (explicit platform-admin grant required)
+
+## Where marketing facts live
+
+Prices, plan names and product statuses each have one source, read by every
+page, the metadata and the structured data:
+
+| What | Source |
+| --- | --- |
+| Plans, prices, plan features, comparison table | `lib/site/pricing.ts` (mirrors RWA Guard's enforced plan entitlements; set `SCALE_STARTING_PRICE_USD` to `null` to show "Contact sales" everywhere) |
+| Product names, statuses, links, lifecycle order | `lib/site/products.ts` |
+| Positioning line, contact inbox | `lib/site/site.ts` |
+
+`lib/site/content.test.ts` (part of `npm test`) fails if a page hard-codes a
+price, reintroduces retired plans or placeholders, or claims customers,
+certifications or funding.
+
+## Design system and motion
+
+Global tokens and primitives are in `app/globals.css` (light theme; any
+`.surface-dark` subtree switches to navy). Motion is CSS-only plus a small
+IntersectionObserver hook (`components/motion/reveal.tsx`): hidden start states
+are gated on `html[data-js='1']`, so the site renders fully without JavaScript,
+and `prefers-reduced-motion` shows every element in its final state. No
+animation library is used. Product visuals on the site are illustrations with
+sample data and are labelled as such.
 
 ## Run locally
 
@@ -30,7 +60,7 @@ delivers a notification email to the Decoda inbox via [Resend](https://resend.co
 Delivery flow:
 
 ```
-Request a demo (navbar) → /contact → visitor submits form
+Contact (footer, Company page) → /contact → visitor submits form
   → POST /api/contact (server validates) → email to hello@decodasecurity.com
   → inline success confirmation
 ```

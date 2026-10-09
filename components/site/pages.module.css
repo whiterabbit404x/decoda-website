@@ -164,6 +164,8 @@
 }
 
 .tableWrap {
+  /* Positioned so visually-hidden labels inside the table stay inside its scroll clip. */
+  position: relative;
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -299,6 +301,7 @@
 }
 
 .asideBlock :global(.eyebrow) {
+  display: flex;
   margin-bottom: 10px;
 }
 

@@ -271,9 +271,9 @@
   align-items: center;
 }
 
+/* Without a visual the copy keeps the page's left edge, at a readable width. */
 .pageHeroInnerSolo {
-  grid-template-columns: minmax(0, 1fr);
-  max-width: 860px;
+  grid-template-columns: minmax(0, 880px);
 }
 
 .pageHeroCopy {
