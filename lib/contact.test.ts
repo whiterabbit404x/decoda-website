@@ -23,7 +23,7 @@ const validBody = {
   name: 'Jane Smith',
   email: 'jane@institution.com',
   company: 'Institution',
-  interestArea: 'RWA Security demo',
+  interestArea: 'Decoda RWA Guard demo or pilot',
   message: 'We are evaluating custody controls for an RWA program.',
 };
 
@@ -277,7 +277,7 @@ test('notification HTML escapes user-supplied markup', () => {
       name: '<script>alert(1)</script>',
       email: 'a@b.com',
       company: '',
-      interestArea: 'RWA Security demo',
+      interestArea: 'Decoda RWA Guard demo or pilot',
       message: '<img src=x onerror=alert(1)>',
     },
     new Date('2026-08-21T12:00:00.000Z'),

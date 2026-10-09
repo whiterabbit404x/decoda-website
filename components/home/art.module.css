@@ -1,0 +1,255 @@
+/* ==========================================================================
+   Product illustrations (decorative). Each product has its own motif:
+   Guard — radar · Vault — layered approvals · Assets — record to token.
+   Hover states are driven by the card that contains them ([data-art-host]).
+   ========================================================================== */
+
+/* -------------------------------- Radar ---------------------------------- */
+
+.radar {
+  position: relative;
+  width: 220px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(45, 212, 191, 0.12), rgba(45, 212, 191, 0.02) 70%, transparent);
+}
+
+.radarSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgba(153, 246, 228, 0.22);
+  stroke-width: 1;
+}
+
+.radarSweep {
+  position: absolute;
+  inset: 2%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(45, 212, 191, 0.4) 50deg, transparent 52deg);
+  mask-image: radial-gradient(closest-side, #000 98%, transparent 100%);
+  -webkit-mask-image: radial-gradient(closest-side, #000 98%, transparent 100%);
+  animation: radar-spin 6s linear infinite;
+  opacity: 0.8;
+}
+
+@keyframes radar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.blip {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%;
+  background: #5eead4;
+  box-shadow: 0 0 10px rgba(94, 234, 212, 0.9);
+  animation: blip 3s var(--ease-in-out) infinite;
+}
+
+.blipAlert {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  background: #fbbf24;
+  box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.18), 0 0 14px rgba(251, 191, 36, 0.9);
+  animation-duration: 1.8s;
+}
+
+@keyframes blip {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+
+.radarCore {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  border: 1px solid rgba(94, 234, 212, 0.4);
+  border-radius: 16px;
+  background: linear-gradient(160deg, #134e4a, #0b1d38);
+  color: #99f6e4;
+  box-shadow: 0 0 0 8px rgba(45, 212, 191, 0.07), 0 12px 30px -8px rgba(20, 184, 166, 0.6);
+}
+
+/* -------------------------------- Stack ---------------------------------- */
+
+.stack {
+  position: relative;
+  width: 176px;
+  height: 150px;
+}
+
+.layer {
+  position: absolute;
+  left: 0;
+  width: 150px;
+  height: 64px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  transition: transform 500ms var(--ease-spring);
+}
+
+.layer3 {
+  top: 8px;
+  transform: translateX(24px) scale(0.92);
+  opacity: 0.7;
+}
+
+.layer2 {
+  top: 36px;
+  transform: translateX(12px) scale(0.96);
+  opacity: 0.88;
+}
+
+.layer1 {
+  top: 66px;
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 16px 30px -14px rgba(180, 83, 9, 0.35);
+}
+
+.layerLabel {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.quorum {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.quorum span {
+  width: 26px;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+}
+
+.quorum span[data-on] {
+  border-color: transparent;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+[data-art-host]:hover .layer3 {
+  transform: translate(30px, -8px) scale(0.92);
+}
+
+[data-art-host]:hover .layer2 {
+  transform: translate(16px, -4px) scale(0.96);
+}
+
+[data-art-host]:hover .layer1 {
+  transform: translateY(4px);
+}
+
+/* --------------------------------- Mint ---------------------------------- */
+
+.mint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 150px;
+}
+
+.doc {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  width: 70px;
+  height: 92px;
+  padding: 14px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.doc span {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--panel-2);
+}
+
+.doc span:first-child {
+  width: 60%;
+  background: rgba(99, 102, 241, 0.35);
+}
+
+.doc span:nth-child(3) {
+  width: 80%;
+}
+
+.mintArrow {
+  width: 56px;
+  fill: none;
+  stroke: rgba(99, 102, 241, 0.55);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 4 5;
+  animation: dash-flow 1.6s linear infinite;
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -18;
+  }
+}
+
+.coins {
+  position: relative;
+  width: 70px;
+  height: 92px;
+}
+
+.coins span {
+  position: absolute;
+  left: 4px;
+  width: 62px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid rgba(99, 102, 241, 0.45);
+  background: linear-gradient(180deg, #eef2ff, #c7d2fe);
+  box-shadow: 0 4px 0 -1px #a5b4fc;
+  transition: transform 500ms var(--ease-spring);
+}
+
+.coins span:nth-child(1) {
+  bottom: 6px;
+}
+
+.coins span:nth-child(2) {
+  bottom: 24px;
+}
+
+.coins span:nth-child(3) {
+  bottom: 42px;
+}
+
+[data-art-host]:hover .coins span:nth-child(2) {
+  transform: translateY(-6px);
+}
+
+[data-art-host]:hover .coins span:nth-child(3) {
+  transform: translateY(-14px);
+}

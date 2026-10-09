@@ -1,54 +1,30 @@
 import Link from 'next/link';
 import { AccountAction, PrimaryAction } from './account-action';
 import { DecodaLogo } from './logo';
+import { MobileMenu, PrimaryNav } from './nav';
 import styles from './site-chrome.module.css';
 
-const navItems = [
-  { href: '/', label: 'Company' },
-  { href: '/solutions/rwa-security', label: 'RWA Security' },
-  { href: '/platform', label: 'Platform Vision' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/contact', label: 'Contact' },
-];
-
+/**
+ * Site header. Pages stay static: the account slots ("Sign in" / "Request
+ * pilot", or the signed-in person's account / "Open launcher") are decided in
+ * the browser by AccountAction / PrimaryAction, desktop first, then the same
+ * two slots inside the mobile menu. tests/http/site-header.test.ts holds that
+ * order and asserts no other header link points at those four destinations.
+ */
 export function SiteHeader() {
   return (
-    <header className={`surface-dark ${styles.header}`}>
+    <header className={styles.header}>
       <div className={styles.inner}>
         <Link href="/" className={styles.brand} aria-label="Decoda Security — home">
-          <DecodaLogo className={styles.logo} size={32} />
+          <DecodaLogo className={styles.logo} size={30} />
         </Link>
 
-        <nav className={styles.nav} aria-label="Primary">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className={styles.navLink}>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <PrimaryNav />
 
         <div className={styles.actions}>
           <AccountAction className={styles.signIn} />
-          <PrimaryAction className={`button-primary ${styles.demoButtonHeader}`} />
-
-          {/* Disclosure-based mobile menu: native expanded/collapsed semantics
-              and keyboard support, with no client JavaScript. */}
-          <details className={styles.menu}>
-            <summary className={styles.menuSummary} aria-label="Menu">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
-                <path d="M4 7h16M4 12h16M4 17h16" />
-              </svg>
-            </summary>
-            <nav className={styles.menuPanel} aria-label="Primary (mobile)">
-              {navItems.map((item) => (
-                <Link key={item.href} href={item.href} className={styles.navLink}>
-                  {item.label}
-                </Link>
-              ))}
-              <AccountAction className={styles.navLink} />
-              <PrimaryAction className={`button-primary ${styles.menuCta}`} />
-            </nav>
-          </details>
+          <PrimaryAction className={`button-primary ${styles.headerCta}`} />
+          <MobileMenu />
         </div>
       </div>
     </header>

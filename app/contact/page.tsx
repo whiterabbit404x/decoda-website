@@ -1,59 +1,57 @@
 import Link from 'next/link';
-import { PageHero, SectionIntro } from '@/components/sections';
+import { IconArrowRight, IconMail } from '@/components/company/icons';
 import { ContactForm } from '@/components/company/contact-form';
+import { Reveal } from '@/components/motion/reveal';
+import { PageHero } from '@/components/site/ui';
+import { pageMetadata } from '@/lib/site/metadata';
+import { GUARD } from '@/lib/site/products';
+import { CONTACT_EMAIL } from '@/lib/site/site';
+import styles from '@/components/site/pages.module.css';
+
+export const metadata = pageMetadata({
+  title: 'Contact',
+  description:
+    'Talk to the Decoda Security team about Decoda RWA Guard, pricing, the ecosystem roadmap, partnerships, press or investor conversations.',
+  path: '/contact',
+});
 
 export default function ContactPage() {
   return (
-    <div className="content-stack">
+    <>
       <PageHero
-        eyebrow="Contact Decoda"
-        title="Request a demo, security briefing, or strategy conversation."
-        body="This is the direct line for prospective customers, partners, and stakeholders evaluating Decoda and RWA Security."
-        actions={
-          <a
-            className="button-primary"
-            href="mailto:hello@decodasecurity.com?subject=Decoda%20Security%20Inquiry"
-          >
-            Email Decoda
-          </a>
-        }
-        aside={
-          <div className="hero-panel">
-            <p className="eyebrow">Suggested next steps</p>
-            <ul className="compact-list">
-              <li>Request RWA Security walkthrough</li>
-              <li>Discuss deployment priorities</li>
-              <li>Share partnership or press inquiries</li>
-            </ul>
-          </div>
-        }
+        eyebrow="Contact"
+        title="Talk to the Decoda team."
+        lead="Questions about Decoda RWA Guard, pricing, the ecosystem roadmap, partnerships or press — tell us what you're evaluating and we'll route it to the right person."
       />
 
-      <section className="section-grid contact-grid">
-        <div>
-          <SectionIntro
-            eyebrow="Get in touch"
-            title="Tell us what you're evaluating and we'll route it to the right team."
-            description="Share a few details about your program and the Decoda team will follow up using the work email you provide."
-          />
-          <div className="contact-details">
-            <div>
-              <p className="eyebrow">Primary inbox</p>
-              <a href="mailto:hello@decodasecurity.com">hello@decodasecurity.com</a>
+      <section className={styles.formSection} aria-label="Contact Decoda">
+        <div className={`container ${styles.formGrid}`}>
+          <Reveal className={styles.formAside}>
+            <div className={styles.asideBlock}>
+              <p className="eyebrow">Email</p>
+              <a href={`mailto:${CONTACT_EMAIL}`} className={styles.asideEmail}>
+                <IconMail size={18} />
+                {CONTACT_EMAIL}
+              </a>
             </div>
-            <div>
-              <p className="eyebrow">What this inbox handles</p>
-              <p>Sales demos, strategic partnerships, media requests, and investor conversations.</p>
+            <div className={styles.asideBlock}>
+              <p className="eyebrow">This inbox handles</p>
+              <p>Product questions and demos, pricing, partnerships, media requests and investor conversations.</p>
             </div>
-            <div>
-              <p className="eyebrow">Flagship product</p>
-              <Link href="/solutions/rwa-security">Explore RWA Security</Link>
+            <div className={`${styles.asideBlock} ${styles.asideHighlight}`}>
+              <p className="eyebrow">Ready to evaluate Guard?</p>
+              <p>Pilot requests go straight to review by the Decoda team.</p>
+              <Link href={GUARD.pilotHref} className={styles.inlineLink}>
+                Request a pilot <IconArrowRight size={14} />
+              </Link>
             </div>
-          </div>
-        </div>
+          </Reveal>
 
-        <ContactForm />
+          <Reveal variant="scale" delay={120}>
+            <ContactForm />
+          </Reveal>
+        </div>
       </section>
-    </div>
+    </>
   );
 }
