@@ -18,6 +18,16 @@ export const metadata: Metadata = {
   title: { default: DEFAULT_TITLE, template: `%s | ${SITE_NAME}` },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  // The Decoda shield favicon set lives in public/ under fixed URLs so every
+  // Decoda product can reference or copy the same files (see npm run brand:icons).
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16 32x32 48x48' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', type: 'image/png', sizes: '32x32' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+  },
   openGraph: {
     type: 'website',
     siteName: SITE_NAME,

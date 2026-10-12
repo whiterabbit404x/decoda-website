@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+import { CHECK_PATH, SHIELD_COLORS, SHIELD_PATH } from '@/components/company/logo';
 import { GUARD } from '@/lib/site/products';
 import { POSITIONING } from '@/lib/site/site';
 
@@ -43,13 +44,8 @@ export default function OpengraphImage() {
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: 'linear-gradient(90deg, #14b8a6, #06b6d4)', display: 'flex' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
           <svg width="56" height="56" viewBox="0 0 40 40" fill="none">
-            <path
-              d="M20 3.2 33.4 8.1c.7.26 1.2.94 1.2 1.7v9.3c0 8.1-5.1 15.3-12.9 18.1l-1.1.4c-.4.14-.8.14-1.2 0l-1.1-.4C10.5 34.5 5.4 27.3 5.4 19.2V9.8c0-.76.5-1.44 1.2-1.7L20 3.2Z"
-              fill="#0f3b4f"
-              stroke="#2dd4bf"
-              strokeWidth="1.6"
-            />
-            <path d="M14 20.4 18.2 24.6 26.6 15.8" stroke="#99f6e4" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={SHIELD_PATH} fill={SHIELD_COLORS.fillStrong[0]} stroke={SHIELD_COLORS.stroke[0]} strokeWidth="1.6" />
+            <path d={CHECK_PATH} stroke={SHIELD_COLORS.checkStrong} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: 30, fontWeight: 700, letterSpacing: 6 }}>DECODA</span>
