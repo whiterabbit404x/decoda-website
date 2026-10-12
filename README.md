@@ -43,6 +43,26 @@ and `prefers-reduced-motion` shows every element in its final state. No
 animation library is used. Product visuals on the site are illustrations with
 sample data and are labelled as such.
 
+## Brand mark and favicons
+
+The Decoda shield in `components/company/logo.tsx` is the one brand mark: the
+header and footer lockup, the CTA shield and the Open Graph image all draw it
+from the same geometry and colours. The favicon set in `public/` is that shield
+alone, served at fixed URLs so every Decoda product can reference or copy the
+same files:
+
+| File | Use |
+| --- | --- |
+| `favicon.svg` | Source of the set (cropped to the mark); modern browsers |
+| `favicon.ico` | 16, 32 and 48 px frames; legacy browsers, `/favicon.ico` probes |
+| `icon.png` | 32 × 32 PNG |
+| `apple-touch-icon.png` | 180 × 180 on white for iOS home screens |
+
+After changing the mark, update `public/favicon.svg` and run
+`npm run brand:icons` (needs Playwright with Chromium) to re-render the rest.
+`components/company/brand-icons.test.ts` fails if the favicon drifts from the
+component or if a Next.js `app/` icon file adds a second, conflicting set.
+
 ## Run locally
 
 ```bash

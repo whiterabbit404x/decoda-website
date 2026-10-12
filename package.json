@@ -11,7 +11,8 @@
     "test:http": "node --import tsx --test --test-concurrency=1 \"tests/http/*.test.ts\"",
     "platform:migrate": "tsx scripts/platform/migrate.ts",
     "platform:grant-admin": "tsx scripts/platform/grant-admin.ts",
-    "platform:import-legacy": "tsx scripts/platform/import-legacy.ts"
+    "platform:import-legacy": "tsx scripts/platform/import-legacy.ts",
+    "brand:icons": "tsx scripts/brand/generate-icons.ts"
   },
   "dependencies": {
     "@workos-inc/authkit-nextjs": "4.3.2",
